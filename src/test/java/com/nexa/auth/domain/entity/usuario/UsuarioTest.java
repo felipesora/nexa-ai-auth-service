@@ -73,4 +73,24 @@ class UsuarioTest {
 
         assertEquals("Perfil do usuário é obrigatório.", exception.getMessage());
     }
+
+    @Test
+    public void deveAlterarStatusParaAtivoQuandoAtivarUsuario() {
+
+        Usuario usuario = new UsuarioBuilder().comAtivo(false).build();
+
+        usuario.ativar();
+
+        assertTrue(usuario.getAtivo());
+    }
+
+    @Test
+    public void deveAlterarStatusParaInativoQuandoDesativarUsuario() {
+
+        Usuario usuario = new UsuarioBuilder().comAtivo(true).build();
+
+        usuario.desativar();
+
+        assertFalse(usuario.getAtivo());
+    }
 }

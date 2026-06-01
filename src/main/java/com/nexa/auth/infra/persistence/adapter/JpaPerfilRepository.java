@@ -1,0 +1,58 @@
+package com.nexa.auth.infra.persistence.adapter;
+
+import com.nexa.auth.domain.entity.perfil.Perfil;
+import com.nexa.auth.domain.entity.perfil.TipoPerfil;
+import com.nexa.auth.domain.entity.usuario.Usuario;
+import com.nexa.auth.domain.repository.PerfilRepository;
+import com.nexa.auth.infra.mapper.PerfilPersistenceMapper;
+import com.nexa.auth.infra.mapper.UsuarioPersistenceMapper;
+import com.nexa.auth.infra.persistence.entity.PerfilEntity;
+import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
+import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public class JpaPerfilRepository implements PerfilRepository {
+
+    private final SpringDataPerfilRepository perfilRepository;
+    private final SpringDataUsuarioRepository usuarioRepository;
+    private final PerfilPersistenceMapper perfilMapper;
+    private final UsuarioPersistenceMapper usuarioMapper;
+
+    public JpaPerfilRepository(SpringDataPerfilRepository perfilRepository, SpringDataUsuarioRepository usuarioRepository, PerfilPersistenceMapper perfilMapper, UsuarioPersistenceMapper usuarioMapper) {
+        this.perfilRepository = perfilRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.perfilMapper = perfilMapper;
+        this.usuarioMapper = usuarioMapper;
+    }
+
+    @Override
+    public Perfil save(Perfil perfil) {
+        PerfilEntity entity = perfilMapper.toEntity(perfil);
+        perfilRepository.save(entity);
+        return perfilMapper.toDomain(entity);
+    }
+
+    @Override
+    public List<Perfil> findAll() {
+        return perfilRepository.findAll()
+                .stream()
+                .map(perfilMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<Perfil> findById(Long id) {
+        return perfilRepository.findById(id)
+                .map(perfilMapper::toDomain);
+    }
+
+    @Override
+    public List<Usuario> findUsuariosByPerfil(TipoPerfil nome) {
+        return usuarioRepository.findUsuariosByPerfil(nome)
+                .stream()
+                .map(usuarioMapper::toDomain)
+                .toList();
+    }
+}

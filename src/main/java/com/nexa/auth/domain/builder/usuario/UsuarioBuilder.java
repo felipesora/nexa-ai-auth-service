@@ -42,6 +42,11 @@ public class UsuarioBuilder {
         return this;
     }
 
+    public UsuarioBuilder comAtivo(Boolean ativo) {
+        this.ativo = ativo;
+        return this;
+    }
+
     public Usuario build() {
         return new Usuario(
                 id,

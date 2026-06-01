@@ -12,8 +12,4 @@ public interface UsuarioRepository {
     List<Usuario> findAll();
 
     Optional<Usuario> findById(Long id);
-
-    Usuario update(Long id, Usuario usuario);
-
-    void delete(Long id);
 }
