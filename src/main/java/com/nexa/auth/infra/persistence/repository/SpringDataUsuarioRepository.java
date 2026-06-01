@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SpringDataUsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
@@ -18,4 +19,6 @@ public interface SpringDataUsuarioRepository extends JpaRepository<UsuarioEntity
         WHERE u.perfil.nome = :nome
     """)
     List<UsuarioEntity> findUsuariosByPerfil(@Param("nome") TipoPerfil nome);
+
+    Optional<UsuarioEntity> findByEmail(String email);
 }

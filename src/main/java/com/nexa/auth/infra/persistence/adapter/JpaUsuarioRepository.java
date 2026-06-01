@@ -39,4 +39,10 @@ public class JpaUsuarioRepository implements UsuarioRepository {
         return usuarioRepository.findById(id)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .map(mapper::toDomain);
+    }
 }

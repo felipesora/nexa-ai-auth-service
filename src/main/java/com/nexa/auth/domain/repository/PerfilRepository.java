@@ -15,5 +15,7 @@ public interface PerfilRepository {
 
     Optional<Perfil> findById(Long id);
 
+    Optional<Perfil> findByNome(TipoPerfil nome);
+
     List<Usuario> findUsuariosByPerfil(TipoPerfil nome);
 }

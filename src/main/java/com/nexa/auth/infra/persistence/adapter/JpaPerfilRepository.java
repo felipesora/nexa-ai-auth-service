@@ -49,6 +49,12 @@ public class JpaPerfilRepository implements PerfilRepository {
     }
 
     @Override
+    public Optional<Perfil> findByNome(TipoPerfil nome) {
+        return perfilRepository.findByNome(nome)
+                .map(perfilMapper::toDomain);
+    }
+
+    @Override
     public List<Usuario> findUsuariosByPerfil(TipoPerfil nome) {
         return usuarioRepository.findUsuariosByPerfil(nome)
                 .stream()
