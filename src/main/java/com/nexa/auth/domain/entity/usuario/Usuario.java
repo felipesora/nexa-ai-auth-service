@@ -1,5 +1,6 @@
 package com.nexa.auth.domain.entity.usuario;
 
+import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.exception.DomainException;
 
 import java.time.LocalDateTime;
@@ -15,11 +16,14 @@ public class Usuario {
     private String senha;
     private LocalDateTime criadoEm;
     private Boolean ativo;
+    private Perfil perfil;
 
-    public Usuario(Long id, String nome, String email, String senha, LocalDateTime criadoEm, Boolean ativo) {
+    public Usuario(Long id, String nome, String email, String senha, LocalDateTime criadoEm, Boolean ativo, Perfil perfil) {
+        validarId(id);
         validarNome(nome);
         validarEmail(email);
         validarSenha(senha);
+        validarPerfil(perfil);
 
         this.id = id;
         this.nome = nome;
@@ -27,6 +31,13 @@ public class Usuario {
         this.senha = senha;
         this.criadoEm = criadoEm;
         this.ativo = ativo;
+        this.perfil = perfil;
+    }
+
+    private void validarId(Long id) {
+        if (id == null || id <= 0) {
+            throw new DomainException("Id do usuário é obrigatório.");
+        }
     }
 
     private void validarNome(String nome) {
@@ -48,6 +59,12 @@ public class Usuario {
     private void validarSenha(String senha) {
         if (senha == null || senha.length() < 6) {
             throw new DomainException("Senha deve possuir no mínimo 6 caracteres.");
+        }
+    }
+
+    private void validarPerfil(Perfil perfil) {
+        if (perfil == null) {
+            throw new DomainException("Perfil do usuário é obrigatório.");
         }
     }
 
@@ -73,5 +90,9 @@ public class Usuario {
 
     public Boolean getAtivo() {
         return ativo;
+    }
+
+    public Perfil getPerfil() {
+        return perfil;
     }
 }

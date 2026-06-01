@@ -1,5 +1,8 @@
 package com.nexa.auth.domain.builder.usuario;
 
+import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
+import com.nexa.auth.domain.entity.perfil.Perfil;
+import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 
 import java.time.LocalDateTime;
@@ -12,6 +15,12 @@ public class UsuarioBuilder {
     private String senha = "123456";
     private LocalDateTime criadoEm = LocalDateTime.now();
     private Boolean ativo = true;
+    private Perfil perfil = new PerfilBuilder().build();
+
+    public UsuarioBuilder comId(Long id) {
+        this.id = id;
+        return this;
+    }
 
     public UsuarioBuilder comNome(String nome) {
         this.nome = nome;
@@ -28,6 +37,11 @@ public class UsuarioBuilder {
         return this;
     }
 
+    public UsuarioBuilder comPerfil(Perfil perfil) {
+        this.perfil = perfil;
+        return this;
+    }
+
     public Usuario build() {
         return new Usuario(
                 id,
@@ -35,7 +49,8 @@ public class UsuarioBuilder {
                 email,
                 senha,
                 criadoEm,
-                ativo
+                ativo,
+                perfil
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.nexa.auth.domain.entity.usuario;
 
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
+import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +20,16 @@ class UsuarioTest {
         assertEquals("123456", usuario.getSenha());
         assertNotNull(usuario.getCriadoEm());
         assertTrue(usuario.getAtivo());
+        assertEquals(1L, usuario.getPerfil().getId());
+        assertEquals(TipoPerfil.USER, usuario.getPerfil().getNome());
+    }
+
+    @Test
+    public void deveLancarDomainExceptionCasoIdEstejaVazio() {
+        DomainException exception = assertThrows(DomainException.class,
+                () -> new UsuarioBuilder().comId(null).build());
+
+        assertEquals("Id do usuário é obrigatório.", exception.getMessage());
     }
 
     @Test
@@ -52,5 +63,14 @@ class UsuarioTest {
 
 
         assertEquals("Senha deve possuir no mínimo 6 caracteres.", exception.getMessage());
+    }
+
+    @Test
+    public void deveLancarDomainExceptionCasoPerfilEstejaVazio() {
+        DomainException exception = assertThrows(DomainException.class,
+                () -> new UsuarioBuilder().comPerfil(null).build());
+
+
+        assertEquals("Perfil do usuário é obrigatório.", exception.getMessage());
     }
 }
