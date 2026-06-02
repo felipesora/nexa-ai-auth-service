@@ -2,6 +2,8 @@ package com.nexa.auth.presentation.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nexa.auth.application.exception.BadRequestException;
+import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
@@ -29,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UsuarioController.class)
 class UsuarioControllerTest {
+
+    private static final String BASE_URL = "/v1/usuarios";
 
     @Autowired
     private MockMvc mockMvc;
@@ -88,7 +92,7 @@ class UsuarioControllerTest {
         when(cadastrarUsuarioUseCase.cadastrarUsuario(any())).thenReturn(usuario);
         when(mapper.toResponse(any())).thenReturn(response);
 
-        mockMvc.perform(post("/v1/usuarios")
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -97,12 +101,34 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void deveRetornarErro400CasoEmailJaEstejaCadastrado() {
-        fail("Teste ainda não implementado");
+    void deveRetornarErro400CasoEmailJaEstejaCadastrado() throws Exception {
+        when(mapper.toDomain(any())).thenReturn(usuario);
+
+        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
+                .thenThrow(new BadRequestException("Este email já está cadastrado"));
+
+        mockMvc.perform(post(BASE_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Este email já está cadastrado"));
     }
 
     @Test
-    void deveRetornarErro404CasoIdDoPerfilNaoExista() {
-        fail("Teste ainda não implementado");
+    void deveRetornarErro404CasoIdDoPerfilNaoExista() throws Exception {
+        when(mapper.toDomain(any())).thenReturn(usuario);
+
+        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
+                .thenThrow(new EntityNotFoundException(
+                        String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
+
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
     }
 }
