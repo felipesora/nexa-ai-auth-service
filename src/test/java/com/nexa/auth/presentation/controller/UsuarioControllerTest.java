@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
@@ -49,6 +50,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
+
+    @MockitoBean
+    private BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
 
     @MockitoBean
     private UsuarioControllerMapper mapper;
@@ -181,5 +185,33 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    void deveBuscarUsuarioPorId() throws Exception {
+        when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
+                .thenReturn(usuario);
+
+        when(mapper.toResponse(usuario))
+                .thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/{id}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id_usuario").value(response.id()))
+                .andExpect(jsonPath("$.nome").value(response.nome()))
+                .andExpect(jsonPath("$.email").value(response.email()));
+    }
+
+    @Test
+    void deveRetornarErro404CasoUsuarioNaoEncontrado() throws Exception {
+        when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
+                .thenThrow(new EntityNotFoundException(
+                        String.format("Usuário com id %s não encontrado", usuario.getId())));
+
+        mockMvc.perform(get(BASE_URL + "/{id}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format("Usuário com id %s não encontrado", usuario.getId())));
     }
 }

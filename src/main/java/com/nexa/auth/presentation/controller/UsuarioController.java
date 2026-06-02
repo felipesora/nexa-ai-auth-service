@@ -1,5 +1,6 @@
 package com.nexa.auth.presentation.controller;
 
+import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
 import com.nexa.auth.domain.entity.usuario.Usuario;
@@ -22,13 +23,16 @@ public class UsuarioController {
 
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
+    private final BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
     private final UsuarioControllerMapper usuarioMapper;
 
     public UsuarioController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
                              ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
+                             BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
                              UsuarioControllerMapper usuarioMapper) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
+        this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
         this.usuarioMapper = usuarioMapper;
     }
 
@@ -51,5 +55,12 @@ public class UsuarioController {
                 .map(usuarioMapper::toResponse);
 
         return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> buscarUsuarioPorId(@PathVariable Long id) {
+        Usuario usuario = buscarUsuarioPorIdUseCase.buscarUsuarioPorId(id);
+        UsuarioResponse response = usuarioMapper.toResponse(usuario);
+        return ResponseEntity.ok(response);
     }
 }
