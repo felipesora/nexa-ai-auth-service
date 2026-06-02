@@ -2,6 +2,7 @@ package com.nexa.auth.application.usecase.usuario;
 
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
@@ -27,10 +28,12 @@ public class CadastrarUsuarioUseCase {
             throw new BadRequestException("Este email já está cadastrado");
         }
 
-        perfilRepository.findById(usuario.getPerfil().getId())
+        Perfil perfil = perfilRepository.findById(usuario.getPerfil().getId())
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
+
+        usuario.setPerfil(perfil);
 
         return usuarioRepository.save(usuario);
     }
