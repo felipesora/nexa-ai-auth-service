@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
+import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
@@ -18,13 +19,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,6 +46,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
+
+    @MockitoBean
+    private ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
 
     @MockitoBean
     private UsuarioControllerMapper mapper;
@@ -130,5 +140,46 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message")
                         .value(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
+    }
+
+    @Test
+    void deveRetornarUmaListaDeUsuariosPaginada() throws Exception {
+
+        Page<Usuario> page = new PageImpl<>(
+                List.of(usuario),
+                PageRequest.of(0, 10),
+                1
+        );
+
+        when(listarTodosUsuariosUseCase.listarTodosUsuarios(any()))
+                .thenReturn(page);
+
+        when(mapper.toResponse(usuario))
+                .thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id_usuario").value(response.id()))
+                .andExpect(jsonPath("$.content[0].nome").value(response.nome()))
+                .andExpect(jsonPath("$.content[0].email").value(response.email()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.number").value(0));
+    }
+
+    @Test
+    void deveRetornarPaginaVazia() throws Exception {
+
+        when(listarTodosUsuariosUseCase.listarTodosUsuarios(any()))
+                .thenReturn(Page.empty());
+
+        mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 }

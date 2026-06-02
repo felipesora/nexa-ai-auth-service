@@ -1,6 +1,7 @@
 package com.nexa.auth.infra.config;
 
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
+import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
 import com.nexa.auth.infra.mapper.PerfilPersistenceMapper;
@@ -20,6 +21,11 @@ public class UsuarioConfig {
     CadastrarUsuarioUseCase cadastrarUsuarioUseCase(UsuarioRepository usuarioRepository,
                                                     PerfilRepository perfilRepository) {
         return new CadastrarUsuarioUseCase(usuarioRepository, perfilRepository);
+    }
+
+    @Bean
+    ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository) {
+        return new ListarTodosUsuariosUseCase(usuarioRepository);
     }
 
     @Bean
