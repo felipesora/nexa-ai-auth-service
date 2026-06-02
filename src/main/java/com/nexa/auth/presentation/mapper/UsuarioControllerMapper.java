@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class UsuarioControllerMapper {
 
     public Usuario toDomain(UsuarioRequest request) {
-        Perfil perfil = new Perfil(request.idPerfil(), null);
+        Perfil perfil = new Perfil(request.idPerfil());
 
         return new Usuario(
                 null,

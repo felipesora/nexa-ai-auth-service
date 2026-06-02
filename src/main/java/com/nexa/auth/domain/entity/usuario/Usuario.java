@@ -19,7 +19,6 @@ public class Usuario {
     private Perfil perfil;
 
     public Usuario(Long id, String nome, String email, String senha, LocalDateTime criadoEm, Boolean ativo, Perfil perfil) {
-        validarId(id);
         validarNome(nome);
         validarEmail(email);
         validarSenha(senha);
@@ -32,12 +31,6 @@ public class Usuario {
         this.criadoEm = criadoEm;
         this.ativo = ativo;
         this.perfil = perfil;
-    }
-
-    private void validarId(Long id) {
-        if (id == null || id <= 0) {
-            throw new DomainException("Id do usuário é obrigatório.");
-        }
     }
 
     private void validarNome(String nome) {

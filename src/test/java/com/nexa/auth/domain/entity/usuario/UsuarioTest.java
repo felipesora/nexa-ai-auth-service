@@ -25,14 +25,6 @@ class UsuarioTest {
     }
 
     @Test
-    public void deveLancarDomainExceptionCasoIdEstejaVazio() {
-        DomainException exception = assertThrows(DomainException.class,
-                () -> new UsuarioBuilder().comId(null).build());
-
-        assertEquals("Id do usuário é obrigatório.", exception.getMessage());
-    }
-
-    @Test
     public void deveLancarDomainExceptionCasoNomeEstejaVazio() {
         DomainException exception = assertThrows(DomainException.class,
                 () -> new UsuarioBuilder().comNome("").build());

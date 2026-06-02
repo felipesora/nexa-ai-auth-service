@@ -18,14 +18,6 @@ class PerfilTest {
     }
 
     @Test
-    public void deveLancarDomainExceptionCasoIdEstejaVazio() {
-        DomainException exception = assertThrows(DomainException.class,
-                () -> new PerfilBuilder().comId(null).build());
-
-        assertEquals("Id do perfil é obrigatório.", exception.getMessage());
-    }
-
-    @Test
     public void deveLancarDomainExceptionCasoNomeEstejaVazio() {
         DomainException exception = assertThrows(DomainException.class,
                 () -> new PerfilBuilder().comNome(null).build());
