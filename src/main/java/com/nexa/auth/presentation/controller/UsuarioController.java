@@ -1,9 +1,6 @@
 package com.nexa.auth.presentation.controller;
 
-import com.nexa.auth.application.usecase.usuario.AtualizarUsuarioUseCase;
-import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
-import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
-import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
+import com.nexa.auth.application.usecase.usuario.*;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
 import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
@@ -26,17 +23,23 @@ public class UsuarioController {
     private final ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
     private final BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
     private final AtualizarUsuarioUseCase atualizarUsuarioUseCase;
+    private final DesativarUsuarioUseCase desativarUsuario;
+    private final AtivarUsuarioUseCase ativarUsuarioUseCase;
     private final UsuarioControllerMapper usuarioMapper;
 
     public UsuarioController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
                              ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
                              BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
                              AtualizarUsuarioUseCase atualizarUsuarioUseCase,
+                             DesativarUsuarioUseCase desativarUsuario,
+                             AtivarUsuarioUseCase ativarUsuarioUseCase,
                              UsuarioControllerMapper usuarioMapper) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
         this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
         this.atualizarUsuarioUseCase = atualizarUsuarioUseCase;
+        this.desativarUsuario = desativarUsuario;
+        this.ativarUsuarioUseCase = ativarUsuarioUseCase;
         this.usuarioMapper = usuarioMapper;
     }
 
@@ -72,6 +75,18 @@ public class UsuarioController {
     public ResponseEntity<Void> atualizarUsuario(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
         Usuario usuario = usuarioMapper.toDomain(request);
         atualizarUsuarioUseCase.atualizarUsuario(id, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
+        desativarUsuario.desativarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/ativar/{id}")
+    public ResponseEntity<Void> ativarUsuario(@PathVariable Long id) {
+        ativarUsuarioUseCase.ativarUsuario(id);
         return ResponseEntity.noContent().build();
     }
 }

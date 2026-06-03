@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
-import com.nexa.auth.application.usecase.usuario.AtualizarUsuarioUseCase;
-import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
-import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
-import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
+import com.nexa.auth.application.usecase.usuario.*;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
@@ -57,6 +54,12 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private AtualizarUsuarioUseCase atualizarUsuarioUseCase;
+
+    @MockitoBean
+    private DesativarUsuarioUseCase desativarUsuarioUseCase;
+
+    @MockitoBean
+    private AtivarUsuarioUseCase ativarUsuarioUseCase;
 
     @MockitoBean
     private UsuarioControllerMapper mapper;
@@ -283,5 +286,53 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message")
                         .value("Este email já está cadastrado"));
+    }
+
+    @Test
+    void deveDesativarUsuario() throws Exception {
+
+        mockMvc.perform(delete(BASE_URL + "/{id}", 1L))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deveRetornarErro404CasoUsuarioNaoEncontradoAoDesativar() throws Exception {
+
+        doThrow(new EntityNotFoundException(
+                String.format("Usuário com id %s não encontrado", usuario.getId())))
+                .when(desativarUsuarioUseCase)
+                .desativarUsuario(any());
+
+        mockMvc.perform(delete(BASE_URL + "/{id}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format(
+                                "Usuário com id %s não encontrado",
+                                usuario.getId())));
+    }
+
+    @Test
+    void deveAtivarUsuario() throws Exception {
+
+        mockMvc.perform(patch(BASE_URL + "/ativar/{id}", 1L))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deveRetornarErro404CasoUsuarioNaoEncontradoAoAtivar() throws Exception {
+
+        doThrow(new EntityNotFoundException(
+                String.format("Usuário com id %s não encontrado", usuario.getId())))
+                .when(ativarUsuarioUseCase)
+                .ativarUsuario(any());
+
+        mockMvc.perform(patch(BASE_URL + "/ativar/{id}", 1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format(
+                                "Usuário com id %s não encontrado",
+                                usuario.getId())));
     }
 }
