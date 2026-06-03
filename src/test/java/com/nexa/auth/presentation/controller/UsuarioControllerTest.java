@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.usecase.usuario.AtualizarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
@@ -31,9 +32,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,6 +54,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
+
+    @MockitoBean
+    private AtualizarUsuarioUseCase atualizarUsuarioUseCase;
 
     @MockitoBean
     private UsuarioControllerMapper mapper;
@@ -115,7 +119,7 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void deveRetornarErro400CasoEmailJaEstejaCadastrado() throws Exception {
+    void deveRetornarErro400CasoEmailJaEstejaCadastradoAoCadastrarUsuario() throws Exception {
         when(mapper.toDomain(any())).thenReturn(usuario);
 
         when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
@@ -130,7 +134,7 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void deveRetornarErro404CasoIdDoPerfilNaoExista() throws Exception {
+    void deveRetornarErro404CasoIdDoPerfilNaoExistaAoCadastrarUsuario() throws Exception {
         when(mapper.toDomain(any())).thenReturn(usuario);
 
         when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
@@ -213,5 +217,71 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message")
                         .value(String.format("Usuário com id %s não encontrado", usuario.getId())));
+    }
+
+    @Test
+    void deveAtualizarUsuario() throws Exception {
+        when(mapper.toDomain(any()))
+                .thenReturn(usuario);
+
+        mockMvc.perform(put(BASE_URL + "/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deveRetornarErro404CasoUsuarioNaoEncontradoAoAtualizar() throws Exception {
+        when(mapper.toDomain(any()))
+                .thenReturn(usuario);
+
+        doThrow(new EntityNotFoundException(String.format("Usuário com id %s não encontrado", usuario.getPerfil().getId())))
+                .when(atualizarUsuarioUseCase)
+                .atualizarUsuario(any(), any());
+
+        mockMvc.perform(put(BASE_URL + "/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format("Usuário com id %s não encontrado", usuario.getId())));
+    }
+
+    @Test
+    void deveRetornarErro404CasoPerfilNaoEncontradoAoAtualizar() throws Exception {
+        when(mapper.toDomain(any()))
+                .thenReturn(usuario);
+
+        doThrow(new EntityNotFoundException(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())))
+                .when(atualizarUsuarioUseCase)
+                .atualizarUsuario(any(), any());
+
+        mockMvc.perform(put(BASE_URL + "/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value(String.format("Perfil com id %s não encontrado",
+                                usuario.getPerfil().getId())));
+    }
+
+    @Test
+    void deveRetornarErro400CasoEmailJaCadastradoAoAtualizar() throws Exception {
+        when(mapper.toDomain(any()))
+                .thenReturn(usuario);
+
+        doThrow(new BadRequestException("Este email já está cadastrado"))
+                .when(atualizarUsuarioUseCase)
+                .atualizarUsuario(any(), any());
+
+        mockMvc.perform(put(BASE_URL + "/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message")
+                        .value("Este email já está cadastrado"));
     }
 }

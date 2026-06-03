@@ -1,5 +1,6 @@
 package com.nexa.auth.presentation.controller;
 
+import com.nexa.auth.application.usecase.usuario.AtualizarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.BuscarUsuarioPorIdUseCase;
 import com.nexa.auth.application.usecase.usuario.CadastrarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.ListarTodosUsuariosUseCase;
@@ -24,15 +25,18 @@ public class UsuarioController {
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
     private final BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
+    private final AtualizarUsuarioUseCase atualizarUsuarioUseCase;
     private final UsuarioControllerMapper usuarioMapper;
 
     public UsuarioController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
                              ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
                              BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
+                             AtualizarUsuarioUseCase atualizarUsuarioUseCase,
                              UsuarioControllerMapper usuarioMapper) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
         this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
+        this.atualizarUsuarioUseCase = atualizarUsuarioUseCase;
         this.usuarioMapper = usuarioMapper;
     }
 
@@ -62,5 +66,12 @@ public class UsuarioController {
         Usuario usuario = buscarUsuarioPorIdUseCase.buscarUsuarioPorId(id);
         UsuarioResponse response = usuarioMapper.toResponse(usuario);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> atualizarUsuario(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
+        Usuario usuario = usuarioMapper.toDomain(request);
+        atualizarUsuarioUseCase.atualizarUsuario(id, usuario);
+        return ResponseEntity.noContent().build();
     }
 }
