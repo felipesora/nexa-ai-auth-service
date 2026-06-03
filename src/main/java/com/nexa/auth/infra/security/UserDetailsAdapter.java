@@ -16,6 +16,13 @@ public class UserDetailsAdapter implements UserDetails {
         this.usuario = usuario;
     }
 
+    public Long getId() {
+        return usuario.getId();
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
