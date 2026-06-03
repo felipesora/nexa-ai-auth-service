@@ -5,6 +5,7 @@ import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -13,10 +14,12 @@ public class AtualizarUsuarioUseCase {
 
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AtualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository) {
+    public AtualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -31,7 +34,7 @@ public class AtualizarUsuarioUseCase {
 
         usuarioExistente.setNome(usuario.getNome());
         usuarioExistente.setEmail(usuario.getEmail());
-        usuarioExistente.setSenha(usuario.getSenha());
+        usuarioExistente.setSenha(passwordEncoder.encode(usuario.getSenha()));
 
         if (usuario.getPerfil() != null) {
             var perfil = perfilRepository.findById(usuario.getPerfil().getId())

@@ -4,15 +4,14 @@ import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.PerfilRepository;
-import com.nexa.auth.infra.mapper.PerfilPersistenceMapper;
-import com.nexa.auth.infra.mapper.UsuarioPersistenceMapper;
+import com.nexa.auth.infra.persistence.mapper.PerfilPersistenceMapper;
+import com.nexa.auth.infra.persistence.mapper.UsuarioPersistenceMapper;
 import com.nexa.auth.infra.persistence.entity.PerfilEntity;
 import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public class JpaPerfilRepository implements PerfilRepository {

@@ -2,6 +2,7 @@ package com.nexa.auth.application.usecase.usuario;
 
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.usecase.auth.CadastrarUsuarioUseCase;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;

@@ -1,9 +1,9 @@
 package com.nexa.auth.presentation.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.usecase.auth.CadastrarUsuarioUseCase;
 import com.nexa.auth.application.usecase.usuario.*;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;

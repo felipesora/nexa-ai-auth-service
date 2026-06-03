@@ -3,8 +3,8 @@ package com.nexa.auth.infra.config;
 import com.nexa.auth.application.usecase.usuario.*;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
-import com.nexa.auth.infra.mapper.PerfilPersistenceMapper;
-import com.nexa.auth.infra.mapper.UsuarioPersistenceMapper;
+import com.nexa.auth.infra.persistence.mapper.PerfilPersistenceMapper;
+import com.nexa.auth.infra.persistence.mapper.UsuarioPersistenceMapper;
 import com.nexa.auth.infra.persistence.adapter.JpaPerfilRepository;
 import com.nexa.auth.infra.persistence.adapter.JpaUsuarioRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
@@ -12,15 +12,10 @@ import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
 import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
-public class UsuarioConfig {
-
-    @Bean
-    CadastrarUsuarioUseCase cadastrarUsuarioUseCase(UsuarioRepository usuarioRepository,
-                                                    PerfilRepository perfilRepository) {
-        return new CadastrarUsuarioUseCase(usuarioRepository, perfilRepository);
-    }
+public class UsuarioBeanConfig {
 
     @Bean
     ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository) {
@@ -38,8 +33,8 @@ public class UsuarioConfig {
     }
 
     @Bean
-    AtualizarUsuarioUseCase atualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository) {
-        return new AtualizarUsuarioUseCase(usuarioRepository, perfilRepository);
+    AtualizarUsuarioUseCase atualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, PasswordEncoder passwordEncoder) {
+        return new AtualizarUsuarioUseCase(usuarioRepository, perfilRepository, passwordEncoder);
     }
 
     @Bean

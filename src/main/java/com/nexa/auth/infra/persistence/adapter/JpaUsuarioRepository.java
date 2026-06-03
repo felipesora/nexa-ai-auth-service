@@ -2,13 +2,12 @@ package com.nexa.auth.infra.persistence.adapter;
 
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.UsuarioRepository;
-import com.nexa.auth.infra.mapper.UsuarioPersistenceMapper;
+import com.nexa.auth.infra.persistence.mapper.UsuarioPersistenceMapper;
 import com.nexa.auth.infra.persistence.entity.UsuarioEntity;
 import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public class JpaUsuarioRepository implements UsuarioRepository {

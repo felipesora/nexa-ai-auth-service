@@ -25,7 +25,7 @@ public class UsuarioEntity {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(nullable = false, length = 50, name = "senha_hash")
+    @Column(nullable = false, length = 255, name = "senha_hash")
     private String senha;
 
     @Column(nullable = false, name = "criado_em")
@@ -34,7 +34,7 @@ public class UsuarioEntity {
     @Column(nullable = false)
     private Boolean ativo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_perfil", nullable = false)
     private PerfilEntity perfil;
 }
