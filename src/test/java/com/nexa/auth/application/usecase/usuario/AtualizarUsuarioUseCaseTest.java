@@ -13,10 +13,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +30,9 @@ class AtualizarUsuarioUseCaseTest {
 
     @Mock
     private PerfilRepository perfilRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private AtualizarUsuarioUseCase useCase;
@@ -52,12 +57,13 @@ class AtualizarUsuarioUseCaseTest {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioExistente));
         when(usuarioRepository.findByEmail(usuarioAtualizado.getEmail())).thenReturn(Optional.empty());
         when(perfilRepository.findById(perfilId)).thenReturn(Optional.of(perfil));
+        when(passwordEncoder.encode(anyString())).thenReturn("senhaCriptografada");
 
         useCase.atualizarUsuario(usuarioId, usuarioAtualizado);
 
         assertEquals("Felipe Atualizado", usuarioExistente.getNome());
         assertEquals("novo@email.com", usuarioExistente.getEmail());
-        assertEquals("123456atualizado", usuarioExistente.getSenha());
+        assertEquals("senhaCriptografada", usuarioExistente.getSenha());
         assertEquals(perfil, usuarioExistente.getPerfil());
 
         verify(usuarioRepository).findById(usuarioId);

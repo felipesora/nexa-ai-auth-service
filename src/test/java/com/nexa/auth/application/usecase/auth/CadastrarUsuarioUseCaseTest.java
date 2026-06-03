@@ -1,8 +1,7 @@
-package com.nexa.auth.application.usecase.usuario;
+package com.nexa.auth.application.usecase.auth;
 
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
-import com.nexa.auth.application.usecase.auth.CadastrarUsuarioUseCase;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -29,6 +29,9 @@ class CadastrarUsuarioUseCaseTest {
     @Mock
     private PerfilRepository perfilRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private CadastrarUsuarioUseCase useCase;
 
@@ -39,12 +42,14 @@ class CadastrarUsuarioUseCaseTest {
         when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.empty());
         when(perfilRepository.findById(usuario.getPerfil().getId())).thenReturn(Optional.of(usuario.getPerfil()));
         when(usuarioRepository.save(usuario)).thenReturn(usuario);
+        when(passwordEncoder.encode(anyString())).thenReturn("senhaCriptografada");
 
         var usuarioCadastrado = useCase.cadastrarUsuario(usuario);
 
         assertNotNull(usuarioCadastrado);
         assertEquals(usuario.getNome(), usuarioCadastrado.getNome());
         assertEquals(usuario.getEmail(), usuarioCadastrado.getEmail());
+        assertEquals("senhaCriptografada", usuarioCadastrado.getSenha());
         verify(usuarioRepository).save(usuario);
     }
 
@@ -86,7 +91,6 @@ class CadastrarUsuarioUseCaseTest {
         Usuario usuario = new UsuarioBuilder().build();
 
         when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.empty());
-
         when(perfilRepository.findById(usuario.getPerfil().getId())).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,

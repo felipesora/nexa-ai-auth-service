@@ -31,14 +31,13 @@ public class CadastrarUsuarioUseCase {
             throw new BadRequestException("Este email já está cadastrado");
         }
 
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-
         Perfil perfil = perfilRepository.findById(usuario.getPerfil().getId())
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
 
         usuario.setPerfil(perfil);
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
 
         return usuarioRepository.save(usuario);
     }

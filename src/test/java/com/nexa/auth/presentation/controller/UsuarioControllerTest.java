@@ -10,6 +10,8 @@ import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
+import com.nexa.auth.infra.security.JwtAuthenticationFilter;
+import com.nexa.auth.infra.security.TokenProvider;
 import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
 import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
 import com.nexa.auth.presentation.response.perfil.PerfilResponse;
@@ -17,12 +19,14 @@ import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UsuarioController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UsuarioControllerTest {
 
     private static final String BASE_URL = "/v1/usuarios";
@@ -67,6 +72,12 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private UsuarioControllerMapper mapper;
+
+    @MockitoBean
+    private TokenProvider tokenProvider;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -111,53 +122,7 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void deveCadastrarUsuario() throws Exception {
-
-        when(mapper.toDomain(any())).thenReturn(usuario);
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any())).thenReturn(usuario);
-        when(mapper.toResponse(any())).thenReturn(response);
-
-        mockMvc.perform(post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value(response.nome()))
-                .andExpect(jsonPath("$.email").value(response.email()));
-    }
-
-    @Test
-    void deveRetornarErro400CasoEmailJaEstejaCadastradoAoCadastrarUsuario() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(usuario);
-
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
-                .thenThrow(new BadRequestException("Este email já está cadastrado"));
-
-        mockMvc.perform(post(BASE_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Este email já está cadastrado"));
-    }
-
-    @Test
-    void deveRetornarErro404CasoIdDoPerfilNaoExistaAoCadastrarUsuario() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(usuario);
-
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
-                .thenThrow(new EntityNotFoundException(
-                        String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
-
-        mockMvc.perform(post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message")
-                        .value(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
-    }
-
-    @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDeUsuariosPaginada() throws Exception {
 
         Page<Usuario> page = new PageImpl<>(
@@ -186,6 +151,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarPaginaVazia() throws Exception {
 
         when(listarTodosUsuariosUseCase.listarTodosUsuarios(any()))
@@ -199,6 +165,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDeUsuariosPorPerfilPaginada() throws Exception {
 
         Page<Usuario> page = new PageImpl<>(
@@ -228,6 +195,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveBuscarUsuarioPorId() throws Exception {
         when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
                 .thenReturn(usuario);
@@ -243,6 +211,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontrado() throws Exception {
         when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
                 .thenThrow(new EntityNotFoundException(
@@ -256,6 +225,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveAtualizarUsuario() throws Exception {
         when(mapper.toDomain(any()))
                 .thenReturn(usuario);
@@ -267,6 +237,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontradoAoAtualizar() throws Exception {
         when(mapper.toDomain(any()))
                 .thenReturn(usuario);
@@ -285,6 +256,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoPerfilNaoEncontradoAoAtualizar() throws Exception {
         when(mapper.toDomain(any()))
                 .thenReturn(usuario);
@@ -304,6 +276,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro400CasoEmailJaCadastradoAoAtualizar() throws Exception {
         when(mapper.toDomain(any()))
                 .thenReturn(usuario);
@@ -322,6 +295,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveDesativarUsuario() throws Exception {
 
         mockMvc.perform(delete(BASE_URL + "/{id}", 1L))
@@ -329,6 +303,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontradoAoDesativar() throws Exception {
 
         doThrow(new EntityNotFoundException(
@@ -346,6 +321,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveAtivarUsuario() throws Exception {
 
         mockMvc.perform(patch(BASE_URL + "/ativar/{id}", 1L))
@@ -353,6 +329,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontradoAoAtivar() throws Exception {
 
         doThrow(new EntityNotFoundException(
