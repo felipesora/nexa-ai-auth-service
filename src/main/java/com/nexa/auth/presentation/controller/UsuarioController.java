@@ -21,6 +21,7 @@ public class UsuarioController {
 
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
+    private final ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase;
     private final BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
     private final AtualizarUsuarioUseCase atualizarUsuarioUseCase;
     private final DesativarUsuarioUseCase desativarUsuario;
@@ -29,6 +30,7 @@ public class UsuarioController {
 
     public UsuarioController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase,
                              ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
+                             ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase,
                              BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
                              AtualizarUsuarioUseCase atualizarUsuarioUseCase,
                              DesativarUsuarioUseCase desativarUsuario,
@@ -36,6 +38,7 @@ public class UsuarioController {
                              UsuarioControllerMapper usuarioMapper) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
+        this.listarUsuariosPorPerfilUseCase = listarUsuariosPorPerfilUseCase;
         this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
         this.atualizarUsuarioUseCase = atualizarUsuarioUseCase;
         this.desativarUsuario = desativarUsuario;
@@ -59,6 +62,14 @@ public class UsuarioController {
     @GetMapping
     public ResponseEntity<Page<UsuarioResponse>> listarTodosUsuarios(@PageableDefault(size = 10)Pageable pageable) {
         Page<UsuarioResponse> usuarios = listarTodosUsuariosUseCase.listarTodosUsuarios(pageable)
+                .map(usuarioMapper::toResponse);
+
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/perfil")
+    public ResponseEntity<Page<UsuarioResponse>> listarUsuariosPorPerfil(@RequestParam String nomePerfil, @PageableDefault(size = 10) Pageable pageable) {
+        Page<UsuarioResponse> usuarios = listarUsuariosPorPerfilUseCase.listarUsuariosPorPerfil(nomePerfil, pageable)
                 .map(usuarioMapper::toResponse);
 
         return ResponseEntity.ok(usuarios);

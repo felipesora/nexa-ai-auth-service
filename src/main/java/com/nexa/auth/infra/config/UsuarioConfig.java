@@ -28,6 +28,11 @@ public class UsuarioConfig {
     }
 
     @Bean
+    ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase(PerfilRepository perfilRepository) {
+        return new ListarUsuariosPorPerfilUseCase(perfilRepository);
+    }
+
+    @Bean
     BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase(UsuarioRepository usuarioRepository) {
         return new BuscarUsuarioPorIdUseCase(usuarioRepository);
     }

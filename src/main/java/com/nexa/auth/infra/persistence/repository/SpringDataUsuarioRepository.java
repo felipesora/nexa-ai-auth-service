@@ -2,6 +2,8 @@ package com.nexa.auth.infra.persistence.repository;
 
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.infra.persistence.entity.UsuarioEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +20,7 @@ public interface SpringDataUsuarioRepository extends JpaRepository<UsuarioEntity
         FROM UsuarioEntity u
         WHERE u.perfil.nome = :nome
     """)
-    List<UsuarioEntity> findUsuariosByPerfil(@Param("nome") TipoPerfil nome);
+    Page<UsuarioEntity> findUsuariosByPerfil(@Param("nome") TipoPerfil nome, Pageable pageable);
 
     Optional<UsuarioEntity> findByEmail(String email);
 }

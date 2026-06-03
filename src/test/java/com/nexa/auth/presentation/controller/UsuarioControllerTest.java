@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +30,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -48,6 +50,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private ListarTodosUsuariosUseCase listarTodosUsuariosUseCase;
+
+    @MockitoBean
+    private ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase;
 
     @MockitoBean
     private BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase;
@@ -192,6 +197,35 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    void deveRetornarUmaListaDeUsuariosPorPerfilPaginada() throws Exception {
+
+        Page<Usuario> page = new PageImpl<>(
+                List.of(usuario),
+                PageRequest.of(0, 10),
+                1
+        );
+
+        when(listarUsuariosPorPerfilUseCase.listarUsuariosPorPerfil(
+                eq("USER"),
+                any(Pageable.class)))
+                .thenReturn(page);
+
+        when(mapper.toResponse(usuario)).thenReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/perfil")
+                        .param("nomePerfil", "USER")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id_usuario").value(response.id()))
+                .andExpect(jsonPath("$.content[0].nome").value(response.nome()))
+                .andExpect(jsonPath("$.content[0].email").value(response.email()))
+                .andExpect(jsonPath("$.content[0].perfil.nome").value("USER"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
     }
 
     @Test

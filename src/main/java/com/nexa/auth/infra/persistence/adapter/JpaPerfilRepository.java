@@ -9,6 +9,8 @@ import com.nexa.auth.infra.mapper.UsuarioPersistenceMapper;
 import com.nexa.auth.infra.persistence.entity.PerfilEntity;
 import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,11 +37,9 @@ public class JpaPerfilRepository implements PerfilRepository {
     }
 
     @Override
-    public List<Perfil> findAll() {
-        return perfilRepository.findAll()
-                .stream()
-                .map(perfilMapper::toDomain)
-                .toList();
+    public Page<Perfil> findAll(Pageable pageable) {
+        return perfilRepository.findAll(pageable)
+                .map(perfilMapper::toDomain);
     }
 
     @Override
@@ -55,10 +55,8 @@ public class JpaPerfilRepository implements PerfilRepository {
     }
 
     @Override
-    public List<Usuario> findUsuariosByPerfil(TipoPerfil nome) {
-        return usuarioRepository.findUsuariosByPerfil(nome)
-                .stream()
-                .map(usuarioMapper::toDomain)
-                .toList();
+    public Page<Usuario> findUsuariosByPerfil(TipoPerfil nome, Pageable pageable) {
+        return usuarioRepository.findUsuariosByPerfil(nome, pageable)
+                .map(usuarioMapper::toDomain);
     }
 }
