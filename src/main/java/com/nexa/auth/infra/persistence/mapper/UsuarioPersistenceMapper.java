@@ -1,4 +1,4 @@
-package com.nexa.auth.infra.mapper;
+package com.nexa.auth.infra.persistence.mapper;
 
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.infra.persistence.entity.UsuarioEntity;

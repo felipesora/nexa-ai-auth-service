@@ -5,22 +5,23 @@ import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.usecase.perfil.CadastrarPerfilUseCase;
 import com.nexa.auth.application.usecase.perfil.ListarTodosPerfisUseCase;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
-import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
+import com.nexa.auth.infra.security.JwtAuthenticationFilter;
+import com.nexa.auth.infra.security.TokenProvider;
 import com.nexa.auth.presentation.mapper.PerfilControllerMapper;
 import com.nexa.auth.presentation.request.perfil.PerfilRequest;
-import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
 import com.nexa.auth.presentation.response.perfil.PerfilResponse;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PerfilController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class PerfilControllerTest {
 
     private static final String BASE_URL = "/v1/perfis";
@@ -50,6 +52,12 @@ class PerfilControllerTest {
 
     @MockitoBean
     private PerfilControllerMapper mapper;
+
+    @MockitoBean
+    private TokenProvider tokenProvider;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -74,6 +82,7 @@ class PerfilControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveCadastrarPerfil() throws Exception {
         when(mapper.toDomain(any())).thenReturn(perfil);
         when(cadastrarPerfilUseCase.cadastrarPerfil(any())).thenReturn(perfil);
@@ -88,6 +97,7 @@ class PerfilControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarErro400CasoPerfilJaExista() throws Exception {
         when(mapper.toDomain(any())).thenReturn(perfil);
 
@@ -103,6 +113,7 @@ class PerfilControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDePerfisPaginada() throws Exception {
 
         Page<Perfil> page = new PageImpl<>(
