@@ -61,7 +61,7 @@ public class UsuarioController {
             """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuários retornados com sucesso"),
+            @ApiResponse(responseCode = "200", description = "Usuários retornados com sucesso", content = @Content(schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "Usuário sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -84,7 +84,7 @@ public class UsuarioController {
             """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuários retornados com sucesso"),
+            @ApiResponse(responseCode = "200", description = "Usuários retornados com sucesso", content = @Content(schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Perfil inválido", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "Usuário sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -109,7 +109,7 @@ public class UsuarioController {
             """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado", content = @Content(schema = @Schema(implementation = UsuarioResponse.class))),
             @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "Sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -132,7 +132,7 @@ public class UsuarioController {
             """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Usuário atualizado com sucesso"),
+            @ApiResponse(responseCode = "204", description = "Usuário atualizado com sucesso", content = @Content),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "Sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -156,7 +156,7 @@ public class UsuarioController {
             """
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Usuário desativado com sucesso"),
+            @ApiResponse(responseCode = "204", description = "Usuário desativado com sucesso", content = @Content),
             @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "Sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
