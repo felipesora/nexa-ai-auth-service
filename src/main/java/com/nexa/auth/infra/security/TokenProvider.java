@@ -22,16 +22,22 @@ public class TokenProvider {
 
     // gerar token JWT
     public String gerarToken(Authentication authentication) {
-        UserDetails user = (UserDetails) authentication.getPrincipal();
-        return buildToken(user.getUsername());
+        UserDetailsAdapter user = (UserDetailsAdapter) authentication.getPrincipal();
+        return buildToken(
+                user.getId(),
+                user.getUsername(),
+                user.getUsuario().getPerfil().getNome().name()
+        );
     }
 
-    private String buildToken(String username) {
+    private String buildToken(Long idUsuario, String username, String role) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationTime);
 
         return Jwts.builder()
                 .subject(username)
+                .claim("idUsuario", idUsuario)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())
