@@ -1,7 +1,11 @@
 package com.nexa.auth.application.usecase.auth;
 
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
@@ -14,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,73 +37,171 @@ class CadastrarUsuarioUseCaseTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private UsuarioControllerMapper mapper;
+
     @InjectMocks
     private CadastrarUsuarioUseCase useCase;
 
     @Test
     void deveCadastrarUsuario() {
+
         Usuario usuario = new UsuarioBuilder().build();
 
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.empty());
-        when(perfilRepository.findById(usuario.getPerfil().getId())).thenReturn(Optional.of(usuario.getPerfil()));
-        when(usuarioRepository.save(usuario)).thenReturn(usuario);
-        when(passwordEncoder.encode(anyString())).thenReturn("senhaCriptografada");
+        UsuarioRequest request = new UsuarioRequest(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getSenha(),
+                usuario.getPerfil().getId()
+        );
 
-        var usuarioCadastrado = useCase.cadastrarUsuario(usuario);
+        UsuarioResponse response = new UsuarioResponse(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                LocalDateTime.now(),
+                usuario.getAtivo(),
+                new PerfilResponse(
+                        usuario.getPerfil().getId(),
+                        usuario.getPerfil().getNome()
+                )
+        );
+
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.empty());
+
+        when(perfilRepository.findById(request.idPerfil()))
+                .thenReturn(Optional.of(usuario.getPerfil()));
+
+        when(mapper.toDomain(request))
+                .thenReturn(usuario);
+
+        when(passwordEncoder.encode(usuario.getSenha()))
+                .thenReturn("senhaCriptografada");
+
+        when(usuarioRepository.save(usuario))
+                .thenReturn(usuario);
+
+        when(mapper.toResponse(usuario))
+                .thenReturn(response);
+
+        UsuarioResponse usuarioCadastrado = useCase.execute(request);
 
         assertNotNull(usuarioCadastrado);
-        assertEquals(usuario.getNome(), usuarioCadastrado.getNome());
-        assertEquals(usuario.getEmail(), usuarioCadastrado.getEmail());
-        assertEquals("senhaCriptografada", usuarioCadastrado.getSenha());
+        assertEquals(usuario.getNome(), usuarioCadastrado.nome());
+        assertEquals(usuario.getEmail(), usuarioCadastrado.email());
+        assertEquals("senhaCriptografada", usuario.getSenha());
+
         verify(usuarioRepository).save(usuario);
     }
 
     @Test
     void deveAssociarPerfilEncontradoAoUsuario() {
+
         Usuario usuario = new UsuarioBuilder().build();
+
+        UsuarioRequest request = new UsuarioRequest(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getSenha(),
+                usuario.getPerfil().getId()
+        );
 
         Perfil perfilBanco = new Perfil(
                 usuario.getPerfil().getId(),
                 usuario.getPerfil().getNome()
         );
 
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.empty());
+        UsuarioResponse response = new UsuarioResponse(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                LocalDateTime.now(),
+                usuario.getAtivo(),
+                new PerfilResponse(
+                        perfilBanco.getId(),
+                        perfilBanco.getNome()
+                )
+        );
 
-        when(perfilRepository.findById(usuario.getPerfil().getId())).thenReturn(Optional.of(perfilBanco));
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.empty());
 
-        when(usuarioRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(perfilRepository.findById(request.idPerfil()))
+                .thenReturn(Optional.of(perfilBanco));
 
-        Usuario resultado = useCase.cadastrarUsuario(usuario);
+        when(mapper.toDomain(request))
+                .thenReturn(usuario);
 
-        assertSame(perfilBanco, resultado.getPerfil());
+        when(passwordEncoder.encode(anyString()))
+                .thenReturn("senha");
+
+        when(usuarioRepository.save(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(mapper.toResponse(usuario))
+                .thenReturn(response);
+
+        useCase.execute(request);
+
+        assertSame(perfilBanco, usuario.getPerfil());
     }
 
     @Test
     void deveLancarExcecaoQuandoEmailJaExiste() {
+
         Usuario usuario = new UsuarioBuilder().build();
 
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+        UsuarioRequest request = new UsuarioRequest(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getSenha(),
+                usuario.getPerfil().getId()
+        );
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
-                () -> useCase.cadastrarUsuario(usuario));
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.of(usuario));
+
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> useCase.execute(request)
+        );
 
         assertEquals("Este email já está cadastrado", exception.getMessage());
+
         verify(usuarioRepository, never()).save(any());
+        verify(mapper, never()).toDomain(any());
     }
 
     @Test
     void deveLancarExcecaoQuandoPerfilNaoExiste() {
+
         Usuario usuario = new UsuarioBuilder().build();
 
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.empty());
-        when(perfilRepository.findById(usuario.getPerfil().getId())).thenReturn(Optional.empty());
+        UsuarioRequest request = new UsuarioRequest(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getSenha(),
+                usuario.getPerfil().getId()
+        );
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> useCase.cadastrarUsuario(usuario));
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.empty());
 
-        assertEquals(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId()),
-                exception.getMessage());
+        when(perfilRepository.findById(request.idPerfil()))
+                .thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> useCase.execute(request)
+        );
+
+        assertEquals(
+                String.format("Perfil com id %s não encontrado", request.idPerfil()),
+                exception.getMessage()
+        );
 
         verify(usuarioRepository, never()).save(any());
+        verify(mapper, never()).toDomain(any());
     }
 }

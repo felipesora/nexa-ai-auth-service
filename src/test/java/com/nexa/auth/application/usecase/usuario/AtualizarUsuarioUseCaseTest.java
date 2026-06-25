@@ -1,5 +1,6 @@
 package com.nexa.auth.application.usecase.usuario;
 
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
 import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.domain.builder.perfil.PerfilBuilder;
@@ -19,8 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AtualizarUsuarioUseCaseTest {
@@ -39,62 +39,80 @@ class AtualizarUsuarioUseCaseTest {
 
     @Test
     void deveAtualizarUsuario() {
+
         Long usuarioId = 1L;
         Long perfilId = 1L;
 
-        Usuario usuarioExistente = new UsuarioBuilder().build();
         Perfil perfil = new PerfilBuilder()
                 .comId(perfilId)
                 .build();
 
-        Usuario usuarioAtualizado = new UsuarioBuilder()
-                .comNome("Felipe Atualizado")
-                .comEmail("novo@email.com")
-                .comSenha("123456atualizado")
-                .comPerfil(perfil)
+        Usuario usuarioExistente = new UsuarioBuilder()
+                .comId(usuarioId)
                 .build();
 
-        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioExistente));
-        when(usuarioRepository.findByEmail(usuarioAtualizado.getEmail())).thenReturn(Optional.empty());
-        when(perfilRepository.findById(perfilId)).thenReturn(Optional.of(perfil));
-        when(passwordEncoder.encode(anyString())).thenReturn("senhaCriptografada");
+        UsuarioRequest request = new UsuarioRequest(
+                "Felipe Atualizado",
+                "novo@email.com",
+                "123456atualizado",
+                perfilId
+        );
 
-        useCase.atualizarUsuario(usuarioId, usuarioAtualizado);
+        when(usuarioRepository.findById(usuarioId))
+                .thenReturn(Optional.of(usuarioExistente));
 
-        assertEquals("Felipe Atualizado", usuarioExistente.getNome());
-        assertEquals("novo@email.com", usuarioExistente.getEmail());
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.empty());
+
+        when(perfilRepository.findById(perfilId))
+                .thenReturn(Optional.of(perfil));
+
+        when(passwordEncoder.encode(anyString()))
+                .thenReturn("senhaCriptografada");
+
+        useCase.execute(usuarioId, request);
+
+        assertEquals(request.nome(), usuarioExistente.getNome());
+        assertEquals(request.email(), usuarioExistente.getEmail());
         assertEquals("senhaCriptografada", usuarioExistente.getSenha());
         assertEquals(perfil, usuarioExistente.getPerfil());
 
         verify(usuarioRepository).findById(usuarioId);
-        verify(usuarioRepository).findByEmail("novo@email.com");
+        verify(usuarioRepository).findByEmail(request.email());
         verify(perfilRepository).findById(perfilId);
         verify(usuarioRepository).save(usuarioExistente);
     }
 
     @Test
     void deveLancarExcecaoUsuarioNaoEncontrado() {
+
         Long usuarioId = 1L;
+
+        UsuarioRequest request = new UsuarioRequest(
+                "Felipe",
+                "felipe@email.com",
+                "123456",
+                1L
+        );
 
         when(usuarioRepository.findById(usuarioId))
                 .thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                        () -> useCase.atualizarUsuario(usuarioId, new UsuarioBuilder().build()));
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> useCase.execute(usuarioId, request)
+        );
 
         assertEquals("Usuário com id 1 não encontrado", exception.getMessage());
     }
 
     @Test
     void deveLancarExcecaoQuandoEmailJaExiste() {
+
         Long usuarioId = 1L;
 
         Usuario usuarioExistente = new UsuarioBuilder()
                 .comId(usuarioId)
-                .build();
-
-        Usuario usuarioAtualizado = new UsuarioBuilder()
-                .comEmail("email@email.com")
                 .build();
 
         Usuario outroUsuario = new UsuarioBuilder()
@@ -102,18 +120,30 @@ class AtualizarUsuarioUseCaseTest {
                 .comEmail("email@email.com")
                 .build();
 
-        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioExistente));
+        UsuarioRequest request = new UsuarioRequest(
+                "Felipe",
+                "email@email.com",
+                "123456",
+                1L
+        );
 
-        when(usuarioRepository.findByEmail("email@email.com")).thenReturn(Optional.of(outroUsuario));
+        when(usuarioRepository.findById(usuarioId))
+                .thenReturn(Optional.of(usuarioExistente));
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
-                        () -> useCase.atualizarUsuario(usuarioId, usuarioAtualizado));
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.of(outroUsuario));
+
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> useCase.execute(usuarioId, request)
+        );
 
         assertEquals("Este email já está cadastrado", exception.getMessage());
     }
 
     @Test
     void deveLancarExcecaoPerfilNaoEncontrado() {
+
         Long usuarioId = 1L;
         Long perfilId = 99L;
 
@@ -121,24 +151,30 @@ class AtualizarUsuarioUseCaseTest {
                 .comId(usuarioId)
                 .build();
 
-        Perfil perfil = new PerfilBuilder()
-                .comId(perfilId)
-                .build();
+        UsuarioRequest request = new UsuarioRequest(
+                "Felipe",
+                "novo@email.com",
+                "123456",
+                perfilId
+        );
 
-        Usuario usuarioAtualizado = new UsuarioBuilder()
-                .comEmail("novo@email.com")
-                .comPerfil(perfil)
-                .build();
+        when(usuarioRepository.findById(usuarioId))
+                .thenReturn(Optional.of(usuarioExistente));
 
-        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioExistente));
+        when(usuarioRepository.findByEmail(request.email()))
+                .thenReturn(Optional.empty());
 
-        when(usuarioRepository.findByEmail("novo@email.com")).thenReturn(Optional.empty());
+        when(perfilRepository.findById(perfilId))
+                .thenReturn(Optional.empty());
 
-        when(perfilRepository.findById(perfilId)).thenReturn(Optional.empty());
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> useCase.execute(usuarioId, request)
+        );
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                        () -> useCase.atualizarUsuario(usuarioId, usuarioAtualizado));
-
-        assertEquals("Perfil com id 99 não encontrado", exception.getMessage());
+        assertEquals(
+                "Perfil com id 99 não encontrado",
+                exception.getMessage()
+        );
     }
 }

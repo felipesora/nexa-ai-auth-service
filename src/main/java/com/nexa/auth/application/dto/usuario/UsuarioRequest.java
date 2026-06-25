@@ -1,4 +1,4 @@
-package com.nexa.auth.presentation.request.usuario;
+package com.nexa.auth.application.dto.usuario;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;

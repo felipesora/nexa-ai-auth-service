@@ -3,10 +3,9 @@ package com.nexa.auth.presentation.controller;
 import com.nexa.auth.application.usecase.perfil.CadastrarPerfilUseCase;
 import com.nexa.auth.application.usecase.perfil.ListarTodosPerfisUseCase;
 import com.nexa.auth.domain.entity.perfil.Perfil;
-import com.nexa.auth.presentation.mapper.PerfilControllerMapper;
-import com.nexa.auth.presentation.request.perfil.PerfilRequest;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
+import com.nexa.auth.application.mapper.PerfilControllerMapper;
+import com.nexa.auth.application.dto.perfil.PerfilRequest;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,14 +33,11 @@ public class PerfilController {
 
     private final CadastrarPerfilUseCase cadastrarPerfilUseCase;
     private final ListarTodosPerfisUseCase listarTodosPerfisUseCase;
-    private final PerfilControllerMapper mapper;
 
     public PerfilController(CadastrarPerfilUseCase cadastrarPerfilUseCase,
-                            ListarTodosPerfisUseCase listarTodosPerfisUseCase,
-                            PerfilControllerMapper mapper) {
+                            ListarTodosPerfisUseCase listarTodosPerfisUseCase) {
         this.cadastrarPerfilUseCase = cadastrarPerfilUseCase;
         this.listarTodosPerfisUseCase = listarTodosPerfisUseCase;
-        this.mapper = mapper;
     }
 
     @Operation(summary = "Cadastrar perfil",
@@ -86,12 +82,7 @@ public class PerfilController {
     @PostMapping
     public ResponseEntity<PerfilResponse> cadastrarPerfil(@RequestBody @Valid PerfilRequest request,
                                                            UriComponentsBuilder uriBuilder) {
-        Perfil perfil = mapper.toDomain(request);
-
-        Perfil perfilSalvo = cadastrarPerfilUseCase.cadastrarPerfil(perfil);
-
-        PerfilResponse response = mapper.toResponse(perfilSalvo);
-
+        PerfilResponse response = cadastrarPerfilUseCase.execute(request);
         URI endereco = uriBuilder.path("/v1/perfis/{id}").buildAndExpand(response.id()).toUri();
         return ResponseEntity.created(endereco).body(response);
     }
@@ -129,9 +120,7 @@ public class PerfilController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<PerfilResponse>> listarTodosPerfis(@PageableDefault(size = 10) Pageable pageable) {
-        Page<PerfilResponse> perfis = listarTodosPerfisUseCase.listarTodosPerfis(pageable)
-                .map(mapper::toResponse);
-
+        Page<PerfilResponse> perfis = listarTodosPerfisUseCase.execute(pageable);
         return ResponseEntity.ok(perfis);
     }
 

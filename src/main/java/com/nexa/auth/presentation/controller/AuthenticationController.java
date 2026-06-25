@@ -6,9 +6,9 @@ import com.nexa.auth.application.dto.auth.LoginRequestDto;
 import com.nexa.auth.application.dto.auth.TokenResponseDto;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.presentation.exception.ErrorResponse;
-import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
-import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
+import com.nexa.auth.application.mapper.UsuarioControllerMapper;
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,12 +32,10 @@ public class AuthenticationController {
 
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final RealizarLoginUseCase realizarLoginUseCase;
-    private final UsuarioControllerMapper usuarioMapper;
 
-    public AuthenticationController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase, RealizarLoginUseCase realizarLoginUseCase, UsuarioControllerMapper usuarioMapper) {
+    public AuthenticationController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase, RealizarLoginUseCase realizarLoginUseCase) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.realizarLoginUseCase = realizarLoginUseCase;
-        this.usuarioMapper = usuarioMapper;
     }
 
     @Operation(summary = "Cadastrar usuário", description = "Realiza o cadastro de um novo usuário no sistema.")
@@ -48,12 +46,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> cadastrarUsuario(@RequestBody @Valid UsuarioRequest request,
                                                             UriComponentsBuilder uriBuilder) {
-        Usuario usuario = usuarioMapper.toDomain(request);
-
-        Usuario usuarioSalvo = cadastrarUsuarioUseCase.cadastrarUsuario(usuario);
-
-        UsuarioResponse response = usuarioMapper.toResponse(usuarioSalvo);
-
+        UsuarioResponse response = cadastrarUsuarioUseCase.execute(request);
         URI endereco = uriBuilder.path("/v1/usuarios/{id}").buildAndExpand(response.id()).toUri();
         return ResponseEntity.created(endereco).body(response);
     }
@@ -65,6 +58,6 @@ public class AuthenticationController {
     })
     @PostMapping("/login")
     public TokenResponseDto login(@RequestBody @Valid LoginRequestDto dto) {
-        return realizarLoginUseCase.fazerLogin(dto);
+        return realizarLoginUseCase.execute(dto);
     }
 }

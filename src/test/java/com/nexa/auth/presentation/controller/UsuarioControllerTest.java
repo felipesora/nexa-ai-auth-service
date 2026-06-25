@@ -12,10 +12,9 @@ import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.infra.security.JwtAuthenticationFilter;
 import com.nexa.auth.infra.security.TokenProvider;
-import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
-import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +70,6 @@ class UsuarioControllerTest {
     private AtivarUsuarioUseCase ativarUsuarioUseCase;
 
     @MockitoBean
-    private UsuarioControllerMapper mapper;
-
-    @MockitoBean
     private TokenProvider tokenProvider;
 
     @MockitoBean
@@ -125,17 +121,14 @@ class UsuarioControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDeUsuariosPaginada() throws Exception {
 
-        Page<Usuario> page = new PageImpl<>(
-                List.of(usuario),
+        Page<UsuarioResponse> page = new PageImpl<>(
+                List.of(response),
                 PageRequest.of(0, 10),
                 1
         );
 
-        when(listarTodosUsuariosUseCase.listarTodosUsuarios(any()))
+        when(listarTodosUsuariosUseCase.execute(any()))
                 .thenReturn(page);
-
-        when(mapper.toResponse(usuario))
-                .thenReturn(response);
 
         mockMvc.perform(get(BASE_URL)
                         .param("page", "0")
@@ -154,7 +147,7 @@ class UsuarioControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveRetornarPaginaVazia() throws Exception {
 
-        when(listarTodosUsuariosUseCase.listarTodosUsuarios(any()))
+        when(listarTodosUsuariosUseCase.execute(any()))
                 .thenReturn(Page.empty());
 
         mockMvc.perform(get(BASE_URL))
@@ -168,18 +161,16 @@ class UsuarioControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDeUsuariosPorPerfilPaginada() throws Exception {
 
-        Page<Usuario> page = new PageImpl<>(
-                List.of(usuario),
+        Page<UsuarioResponse> page = new PageImpl<>(
+                List.of(response),
                 PageRequest.of(0, 10),
                 1
         );
 
-        when(listarUsuariosPorPerfilUseCase.listarUsuariosPorPerfil(
+        when(listarUsuariosPorPerfilUseCase.execute(
                 eq("USER"),
                 any(Pageable.class)))
                 .thenReturn(page);
-
-        when(mapper.toResponse(usuario)).thenReturn(response);
 
         mockMvc.perform(get(BASE_URL + "/perfil")
                         .param("nomePerfil", "USER")
@@ -197,10 +188,7 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveBuscarUsuarioPorId() throws Exception {
-        when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
-                .thenReturn(usuario);
-
-        when(mapper.toResponse(usuario))
+        when(buscarUsuarioPorIdUseCase.execute(any()))
                 .thenReturn(response);
 
         mockMvc.perform(get(BASE_URL + "/{id}", 1L))
@@ -213,7 +201,7 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontrado() throws Exception {
-        when(buscarUsuarioPorIdUseCase.buscarUsuarioPorId(any()))
+        when(buscarUsuarioPorIdUseCase.execute(any()))
                 .thenThrow(new EntityNotFoundException(
                         String.format("Usuário com id %s não encontrado", usuario.getId())));
 
@@ -227,9 +215,6 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveAtualizarUsuario() throws Exception {
-        when(mapper.toDomain(any()))
-                .thenReturn(usuario);
-
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -239,12 +224,9 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoUsuarioNaoEncontradoAoAtualizar() throws Exception {
-        when(mapper.toDomain(any()))
-                .thenReturn(usuario);
-
         doThrow(new EntityNotFoundException(String.format("Usuário com id %s não encontrado", usuario.getPerfil().getId())))
                 .when(atualizarUsuarioUseCase)
-                .atualizarUsuario(any(), any());
+                .execute(any(), any());
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -258,12 +240,9 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoPerfilNaoEncontradoAoAtualizar() throws Exception {
-        when(mapper.toDomain(any()))
-                .thenReturn(usuario);
-
         doThrow(new EntityNotFoundException(String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())))
                 .when(atualizarUsuarioUseCase)
-                .atualizarUsuario(any(), any());
+                .execute(any(), any());
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -278,12 +257,9 @@ class UsuarioControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro400CasoEmailJaCadastradoAoAtualizar() throws Exception {
-        when(mapper.toDomain(any()))
-                .thenReturn(usuario);
-
         doThrow(new BadRequestException("Este email já está cadastrado"))
                 .when(atualizarUsuarioUseCase)
-                .atualizarUsuario(any(), any());
+                .execute(any(), any());
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -309,7 +285,7 @@ class UsuarioControllerTest {
         doThrow(new EntityNotFoundException(
                 String.format("Usuário com id %s não encontrado", usuario.getId())))
                 .when(desativarUsuarioUseCase)
-                .desativarUsuario(any());
+                .execute(any());
 
         mockMvc.perform(delete(BASE_URL + "/{id}", 1L))
                 .andExpect(status().isNotFound())
@@ -335,7 +311,7 @@ class UsuarioControllerTest {
         doThrow(new EntityNotFoundException(
                 String.format("Usuário com id %s não encontrado", usuario.getId())))
                 .when(ativarUsuarioUseCase)
-                .ativarUsuario(any());
+                .execute(any());
 
         mockMvc.perform(patch(BASE_URL + "/ativar/{id}", 1L))
                 .andExpect(status().isNotFound())

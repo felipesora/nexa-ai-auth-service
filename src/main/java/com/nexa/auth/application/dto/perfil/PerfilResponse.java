@@ -1,4 +1,4 @@
-package com.nexa.auth.presentation.response.perfil;
+package com.nexa.auth.application.dto.perfil;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;

@@ -1,4 +1,4 @@
-package com.nexa.auth.presentation.request.perfil;
+package com.nexa.auth.application.dto.perfil;
 
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import jakarta.validation.constraints.NotNull;

@@ -14,10 +14,9 @@ import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.infra.security.JwtAuthenticationFilter;
 import com.nexa.auth.infra.security.TokenProvider;
-import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
-import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,9 +48,6 @@ class AuthenticationControllerTest {
 
     @MockitoBean
     private RealizarLoginUseCase realizarLoginUseCase;
-
-    @MockitoBean
-    private UsuarioControllerMapper mapper;
 
     @MockitoBean
     private TokenProvider tokenProvider;
@@ -106,24 +101,24 @@ class AuthenticationControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveCadastrarUsuario() throws Exception {
 
-        when(mapper.toDomain(any())).thenReturn(usuario);
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any())).thenReturn(usuario);
-        when(mapper.toResponse(any())).thenReturn(response);
+        when(cadastrarUsuarioUseCase.execute(any()))
+                .thenReturn(response);
 
         mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome").value(response.nome()))
-                .andExpect(jsonPath("$.email").value(response.email()));
+                .andExpect(jsonPath("$.email").value(response.email()))
+                .andExpect(jsonPath("$.perfil.id_perfil").value(response.perfil().id()))
+                .andExpect(jsonPath("$.perfil.nome").value(response.perfil().nome().name()));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro400CasoEmailJaEstejaCadastradoAoCadastrarUsuario() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(usuario);
 
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
+        when(cadastrarUsuarioUseCase.execute(any()))
                 .thenThrow(new BadRequestException("Este email já está cadastrado"));
 
         mockMvc.perform(post(BASE_URL + "/register")
@@ -137,11 +132,11 @@ class AuthenticationControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro404CasoIdDoPerfilNaoExistaAoCadastrarUsuario() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(usuario);
 
-        when(cadastrarUsuarioUseCase.cadastrarUsuario(any()))
+        when(cadastrarUsuarioUseCase.execute(any()))
                 .thenThrow(new EntityNotFoundException(
-                        String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())));
+                        String.format("Perfil com id %s não encontrado", usuario.getPerfil().getId())
+                ));
 
         mockMvc.perform(post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -165,7 +160,7 @@ class AuthenticationControllerTest {
                 3600L
         );
 
-        when(realizarLoginUseCase.fazerLogin(any(LoginRequestDto.class)))
+        when(realizarLoginUseCase.execute(any(LoginRequestDto.class)))
                 .thenReturn(response);
 
         mockMvc.perform(post(BASE_URL + "/login")
@@ -212,7 +207,7 @@ class AuthenticationControllerTest {
                 "senhaErrada"
         );
 
-        when(realizarLoginUseCase.fazerLogin(any(LoginRequestDto.class)))
+        when(realizarLoginUseCase.execute(any(LoginRequestDto.class)))
                 .thenThrow(new BadCredentialsException("Credenciais inválidas"));
 
         mockMvc.perform(post(BASE_URL + "/login")

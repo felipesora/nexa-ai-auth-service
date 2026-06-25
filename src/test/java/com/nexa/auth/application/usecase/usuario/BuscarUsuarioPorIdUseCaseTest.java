@@ -1,6 +1,8 @@
 package com.nexa.auth.application.usecase.usuario;
 
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import com.nexa.auth.application.exception.EntityNotFoundException;
+import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
@@ -20,40 +22,46 @@ class BuscarUsuarioPorIdUseCaseTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private UsuarioControllerMapper mapper;
+
     @InjectMocks
     private BuscarUsuarioPorIdUseCase useCase;
 
     @Test
     void deveBuscarUsuarioPorId() {
-        // Arrange
+
         Long id = 1L;
+
         Usuario usuario = mock(Usuario.class);
+        UsuarioResponse response = mock(UsuarioResponse.class);
 
         when(usuarioRepository.findById(id))
                 .thenReturn(Optional.of(usuario));
 
-        // Act
-        Usuario resultado = useCase.buscarUsuarioPorId(id);
+        when(mapper.toResponse(usuario))
+                .thenReturn(response);
 
-        // Assert
+        UsuarioResponse resultado = useCase.execute(id);
+
         assertNotNull(resultado);
-        assertEquals(usuario, resultado);
+        assertEquals(response, resultado);
 
         verify(usuarioRepository).findById(id);
+        verify(mapper).toResponse(usuario);
     }
 
     @Test
     void deveLancarExcecaoQuandoUsuarioNaoEncontrado() {
-        // Arrange
+
         Long id = 1L;
 
         when(usuarioRepository.findById(id))
                 .thenReturn(Optional.empty());
 
-        // Act + Assert
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
-                () -> useCase.buscarUsuarioPorId(id)
+                () -> useCase.execute(id)
         );
 
         assertEquals(
@@ -62,5 +70,6 @@ class BuscarUsuarioPorIdUseCaseTest {
         );
 
         verify(usuarioRepository).findById(id);
+        verifyNoInteractions(mapper);
     }
 }

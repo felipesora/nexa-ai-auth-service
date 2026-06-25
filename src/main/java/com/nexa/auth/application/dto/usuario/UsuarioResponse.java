@@ -1,8 +1,8 @@
-package com.nexa.auth.presentation.response.usuario;
+package com.nexa.auth.application.dto.usuario;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
 
 import java.time.LocalDateTime;
 

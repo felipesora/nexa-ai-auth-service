@@ -9,7 +9,7 @@ import com.nexa.auth.infra.persistence.adapter.JpaPerfilRepository;
 import com.nexa.auth.infra.persistence.adapter.JpaUsuarioRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
-import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
+import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,18 +18,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UsuarioBeanConfig {
 
     @Bean
-    ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository) {
-        return new ListarTodosUsuariosUseCase(usuarioRepository);
+    ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository,
+                                                          UsuarioControllerMapper mapper) {
+        return new ListarTodosUsuariosUseCase(usuarioRepository, mapper);
     }
 
     @Bean
-    ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase(PerfilRepository perfilRepository) {
-        return new ListarUsuariosPorPerfilUseCase(perfilRepository);
+    ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase(PerfilRepository perfilRepository,
+                                                                  UsuarioControllerMapper mapper) {
+        return new ListarUsuariosPorPerfilUseCase(perfilRepository, mapper);
     }
 
     @Bean
-    BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase(UsuarioRepository usuarioRepository) {
-        return new BuscarUsuarioPorIdUseCase(usuarioRepository);
+    BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase(UsuarioRepository usuarioRepository,
+                                                        UsuarioControllerMapper mapper) {
+        return new BuscarUsuarioPorIdUseCase(usuarioRepository, mapper);
     }
 
     @Bean

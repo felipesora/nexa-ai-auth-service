@@ -9,9 +9,8 @@ import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.infra.security.JwtAuthenticationFilter;
 import com.nexa.auth.infra.security.TokenProvider;
-import com.nexa.auth.presentation.mapper.PerfilControllerMapper;
-import com.nexa.auth.presentation.request.perfil.PerfilRequest;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.perfil.PerfilRequest;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,9 +47,6 @@ class PerfilControllerTest {
 
     @MockitoBean
     private ListarTodosPerfisUseCase listarTodosPerfisUseCase;
-
-    @MockitoBean
-    private PerfilControllerMapper mapper;
 
     @MockitoBean
     private TokenProvider tokenProvider;
@@ -84,9 +79,9 @@ class PerfilControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveCadastrarPerfil() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(perfil);
-        when(cadastrarPerfilUseCase.cadastrarPerfil(any())).thenReturn(perfil);
-        when(mapper.toResponse(any())).thenReturn(response);
+
+        when(cadastrarPerfilUseCase.execute(any()))
+                .thenReturn(response);
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,9 +94,8 @@ class PerfilControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void deveRetornarErro400CasoPerfilJaExista() throws Exception {
-        when(mapper.toDomain(any())).thenReturn(perfil);
 
-        when(cadastrarPerfilUseCase.cadastrarPerfil(any()))
+        when(cadastrarPerfilUseCase.execute(any()))
                 .thenThrow(new BadRequestException("Este perfil já está cadastrado"));
 
         mockMvc.perform(post(BASE_URL)
@@ -116,17 +110,14 @@ class PerfilControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveRetornarUmaListaDePerfisPaginada() throws Exception {
 
-        Page<Perfil> page = new PageImpl<>(
-                List.of(perfil),
+        Page<PerfilResponse> page = new PageImpl<>(
+                List.of(response),
                 PageRequest.of(0, 10),
                 1
         );
 
-        when(listarTodosPerfisUseCase.listarTodosPerfis(any()))
+        when(listarTodosPerfisUseCase.execute(any()))
                 .thenReturn(page);
-
-        when(mapper.toResponse(perfil))
-                .thenReturn(response);
 
         mockMvc.perform(get(BASE_URL)
                         .param("page", "0")
