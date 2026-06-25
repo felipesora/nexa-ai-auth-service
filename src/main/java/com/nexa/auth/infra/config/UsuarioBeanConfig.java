@@ -9,7 +9,7 @@ import com.nexa.auth.infra.persistence.adapter.JpaPerfilRepository;
 import com.nexa.auth.infra.persistence.adapter.JpaUsuarioRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataPerfilRepository;
 import com.nexa.auth.infra.persistence.repository.SpringDataUsuarioRepository;
-import com.nexa.auth.presentation.mapper.UsuarioControllerMapper;
+import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,10 +1,10 @@
-package com.nexa.auth.presentation.mapper;
+package com.nexa.auth.application.mapper;
 
 import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
-import com.nexa.auth.presentation.request.usuario.UsuarioRequest;
-import com.nexa.auth.presentation.response.perfil.PerfilResponse;
-import com.nexa.auth.presentation.response.usuario.UsuarioResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.perfil.PerfilResponse;
+import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 
 import java.time.LocalDateTime;
 
