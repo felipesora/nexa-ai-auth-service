@@ -36,7 +36,7 @@ class DesativarUsuarioUseCaseTest {
 
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
 
-        useCase.desativarUsuario(usuarioId);
+        useCase.execute(usuarioId);
 
         assertFalse(usuario.getAtivo());
 
@@ -52,7 +52,7 @@ class DesativarUsuarioUseCaseTest {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                        () -> useCase.desativarUsuario(usuarioId));
+                        () -> useCase.execute(usuarioId));
 
         assertEquals("Usuário com id 1 não encontrado", exception.getMessage());
 

@@ -33,22 +33,19 @@ public class UsuarioController {
     private final AtualizarUsuarioUseCase atualizarUsuarioUseCase;
     private final DesativarUsuarioUseCase desativarUsuario;
     private final AtivarUsuarioUseCase ativarUsuarioUseCase;
-    private final UsuarioControllerMapper usuarioMapper;
 
     public UsuarioController(ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
                              ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase,
                              BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
                              AtualizarUsuarioUseCase atualizarUsuarioUseCase,
                              DesativarUsuarioUseCase desativarUsuario,
-                             AtivarUsuarioUseCase ativarUsuarioUseCase,
-                             UsuarioControllerMapper usuarioMapper) {
+                             AtivarUsuarioUseCase ativarUsuarioUseCase) {
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
         this.listarUsuariosPorPerfilUseCase = listarUsuariosPorPerfilUseCase;
         this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
         this.atualizarUsuarioUseCase = atualizarUsuarioUseCase;
         this.desativarUsuario = desativarUsuario;
         this.ativarUsuarioUseCase = ativarUsuarioUseCase;
-        this.usuarioMapper = usuarioMapper;
     }
 
     @Operation(
@@ -68,9 +65,7 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UsuarioResponse>> listarTodosUsuarios(@PageableDefault(size = 10)Pageable pageable) {
-        Page<UsuarioResponse> usuarios = listarTodosUsuariosUseCase.listarTodosUsuarios(pageable)
-                .map(usuarioMapper::toResponse);
-
+        Page<UsuarioResponse> usuarios = listarTodosUsuariosUseCase.execute(pageable);
         return ResponseEntity.ok(usuarios);
     }
 
@@ -92,9 +87,7 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/perfil")
     public ResponseEntity<Page<UsuarioResponse>> listarUsuariosPorPerfil(@RequestParam String nomePerfil, @PageableDefault(size = 10) Pageable pageable) {
-        Page<UsuarioResponse> usuarios = listarUsuariosPorPerfilUseCase.listarUsuariosPorPerfil(nomePerfil, pageable)
-                .map(usuarioMapper::toResponse);
-
+        Page<UsuarioResponse> usuarios = listarUsuariosPorPerfilUseCase.execute(nomePerfil, pageable);
         return ResponseEntity.ok(usuarios);
     }
 
@@ -117,8 +110,7 @@ public class UsuarioController {
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponse> buscarUsuarioPorId(@PathVariable Long id) {
-        Usuario usuario = buscarUsuarioPorIdUseCase.buscarUsuarioPorId(id);
-        UsuarioResponse response = usuarioMapper.toResponse(usuario);
+        UsuarioResponse response = buscarUsuarioPorIdUseCase.execute(id);
         return ResponseEntity.ok(response);
     }
 
@@ -141,8 +133,7 @@ public class UsuarioController {
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarUsuario(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
-        Usuario usuario = usuarioMapper.toDomain(request);
-        atualizarUsuarioUseCase.atualizarUsuario(id, usuario);
+        atualizarUsuarioUseCase.execute(id, request);
         return ResponseEntity.noContent().build();
     }
 
@@ -164,7 +155,7 @@ public class UsuarioController {
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
-        desativarUsuario.desativarUsuario(id);
+        desativarUsuario.execute(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -185,7 +176,7 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/ativar/{id}")
     public ResponseEntity<Void> ativarUsuario(@PathVariable Long id) {
-        ativarUsuarioUseCase.ativarUsuario(id);
+        ativarUsuarioUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 }

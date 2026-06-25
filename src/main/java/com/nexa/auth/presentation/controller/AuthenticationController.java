@@ -58,6 +58,6 @@ public class AuthenticationController {
     })
     @PostMapping("/login")
     public TokenResponseDto login(@RequestBody @Valid LoginRequestDto dto) {
-        return realizarLoginUseCase.fazerLogin(dto);
+        return realizarLoginUseCase.execute(dto);
     }
 }

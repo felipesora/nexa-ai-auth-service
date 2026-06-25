@@ -18,18 +18,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UsuarioBeanConfig {
 
     @Bean
-    ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository) {
-        return new ListarTodosUsuariosUseCase(usuarioRepository);
+    ListarTodosUsuariosUseCase listarTodosUsuariosUseCase(UsuarioRepository usuarioRepository,
+                                                          UsuarioControllerMapper mapper) {
+        return new ListarTodosUsuariosUseCase(usuarioRepository, mapper);
     }
 
     @Bean
-    ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase(PerfilRepository perfilRepository) {
-        return new ListarUsuariosPorPerfilUseCase(perfilRepository);
+    ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase(PerfilRepository perfilRepository,
+                                                                  UsuarioControllerMapper mapper) {
+        return new ListarUsuariosPorPerfilUseCase(perfilRepository, mapper);
     }
 
     @Bean
-    BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase(UsuarioRepository usuarioRepository) {
-        return new BuscarUsuarioPorIdUseCase(usuarioRepository);
+    BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase(UsuarioRepository usuarioRepository,
+                                                        UsuarioControllerMapper mapper) {
+        return new BuscarUsuarioPorIdUseCase(usuarioRepository, mapper);
     }
 
     @Bean

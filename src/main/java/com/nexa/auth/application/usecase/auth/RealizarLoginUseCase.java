@@ -22,7 +22,7 @@ public class RealizarLoginUseCase {
         this.tokenProvider = tokenProvider;
     }
 
-    public TokenResponseDto fazerLogin(LoginRequestDto dto) {
+    public TokenResponseDto execute(LoginRequestDto dto) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.email(), dto.senha()));
             String token = tokenProvider.gerarToken(authentication);

@@ -160,7 +160,7 @@ class AuthenticationControllerTest {
                 3600L
         );
 
-        when(realizarLoginUseCase.fazerLogin(any(LoginRequestDto.class)))
+        when(realizarLoginUseCase.execute(any(LoginRequestDto.class)))
                 .thenReturn(response);
 
         mockMvc.perform(post(BASE_URL + "/login")
@@ -207,7 +207,7 @@ class AuthenticationControllerTest {
                 "senhaErrada"
         );
 
-        when(realizarLoginUseCase.fazerLogin(any(LoginRequestDto.class)))
+        when(realizarLoginUseCase.execute(any(LoginRequestDto.class)))
                 .thenThrow(new BadCredentialsException("Credenciais inválidas"));
 
         mockMvc.perform(post(BASE_URL + "/login")

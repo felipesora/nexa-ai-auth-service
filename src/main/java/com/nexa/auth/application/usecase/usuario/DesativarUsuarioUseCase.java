@@ -12,7 +12,7 @@ public class DesativarUsuarioUseCase {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public void desativarUsuario(Long id) {
+    public void execute(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Usuário com id %s não encontrado", id)));
 

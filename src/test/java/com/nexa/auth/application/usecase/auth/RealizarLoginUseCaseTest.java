@@ -53,7 +53,7 @@ class RealizarLoginUseCaseTest {
         when(tokenProvider.gerarToken(authentication))
                 .thenReturn("jwt-token");
 
-        TokenResponseDto response = useCase.fazerLogin(dto);
+        TokenResponseDto response = useCase.execute(dto);
 
         assertNotNull(response);
         assertEquals("jwt-token", response.token());
@@ -76,7 +76,7 @@ class RealizarLoginUseCaseTest {
 
         BadCredentialsException exception = assertThrows(
                 BadCredentialsException.class,
-                () -> useCase.fazerLogin(dto)
+                () -> useCase.execute(dto)
         );
 
         assertEquals("Credenciais inválidas", exception.getMessage());
@@ -97,7 +97,7 @@ class RealizarLoginUseCaseTest {
 
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> useCase.fazerLogin(dto)
+                () -> useCase.execute(dto)
         );
 
         assertNotNull(exception.getCause());
