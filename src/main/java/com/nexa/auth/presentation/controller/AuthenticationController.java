@@ -32,12 +32,10 @@ public class AuthenticationController {
 
     private final CadastrarUsuarioUseCase cadastrarUsuarioUseCase;
     private final RealizarLoginUseCase realizarLoginUseCase;
-    private final UsuarioControllerMapper usuarioMapper;
 
-    public AuthenticationController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase, RealizarLoginUseCase realizarLoginUseCase, UsuarioControllerMapper usuarioMapper) {
+    public AuthenticationController(CadastrarUsuarioUseCase cadastrarUsuarioUseCase, RealizarLoginUseCase realizarLoginUseCase) {
         this.cadastrarUsuarioUseCase = cadastrarUsuarioUseCase;
         this.realizarLoginUseCase = realizarLoginUseCase;
-        this.usuarioMapper = usuarioMapper;
     }
 
     @Operation(summary = "Cadastrar usuário", description = "Realiza o cadastro de um novo usuário no sistema.")
@@ -48,12 +46,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> cadastrarUsuario(@RequestBody @Valid UsuarioRequest request,
                                                             UriComponentsBuilder uriBuilder) {
-        Usuario usuario = usuarioMapper.toDomain(request);
-
-        Usuario usuarioSalvo = cadastrarUsuarioUseCase.cadastrarUsuario(usuario);
-
-        UsuarioResponse response = usuarioMapper.toResponse(usuarioSalvo);
-
+        UsuarioResponse response = cadastrarUsuarioUseCase.execute(request);
         URI endereco = uriBuilder.path("/v1/usuarios/{id}").buildAndExpand(response.id()).toUri();
         return ResponseEntity.created(endereco).body(response);
     }
