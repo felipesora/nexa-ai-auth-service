@@ -8,6 +8,7 @@ import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import com.nexa.auth.domain.builder.usuario.UsuarioBuilder;
 import com.nexa.auth.domain.entity.perfil.Perfil;
+import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +53,7 @@ class CadastrarUsuarioUseCaseTest {
         UsuarioRequest request = new UsuarioRequest(
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getSenha(),
-                usuario.getPerfil().getId()
+                usuario.getSenha()
         );
 
         UsuarioResponse response = new UsuarioResponse(
@@ -70,7 +71,7 @@ class CadastrarUsuarioUseCaseTest {
         when(usuarioRepository.findByEmail(request.email()))
                 .thenReturn(Optional.empty());
 
-        when(perfilRepository.findById(request.idPerfil()))
+        when(perfilRepository.findByNome(TipoPerfil.USER))
                 .thenReturn(Optional.of(usuario.getPerfil()));
 
         when(mapper.toDomain(request))
@@ -103,8 +104,7 @@ class CadastrarUsuarioUseCaseTest {
         UsuarioRequest request = new UsuarioRequest(
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getSenha(),
-                usuario.getPerfil().getId()
+                usuario.getSenha()
         );
 
         Perfil perfilBanco = new Perfil(
@@ -127,7 +127,7 @@ class CadastrarUsuarioUseCaseTest {
         when(usuarioRepository.findByEmail(request.email()))
                 .thenReturn(Optional.empty());
 
-        when(perfilRepository.findById(request.idPerfil()))
+        when(perfilRepository.findByNome(TipoPerfil.USER))
                 .thenReturn(Optional.of(perfilBanco));
 
         when(mapper.toDomain(request))
@@ -155,8 +155,7 @@ class CadastrarUsuarioUseCaseTest {
         UsuarioRequest request = new UsuarioRequest(
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getSenha(),
-                usuario.getPerfil().getId()
+                usuario.getSenha()
         );
 
         when(usuarioRepository.findByEmail(request.email()))
@@ -181,14 +180,13 @@ class CadastrarUsuarioUseCaseTest {
         UsuarioRequest request = new UsuarioRequest(
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getSenha(),
-                usuario.getPerfil().getId()
+                usuario.getSenha()
         );
 
         when(usuarioRepository.findByEmail(request.email()))
                 .thenReturn(Optional.empty());
 
-        when(perfilRepository.findById(request.idPerfil()))
+        when(perfilRepository.findByNome(TipoPerfil.USER))
                 .thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(
@@ -197,7 +195,7 @@ class CadastrarUsuarioUseCaseTest {
         );
 
         assertEquals(
-                String.format("Perfil com id %s não encontrado", request.idPerfil()),
+                "Perfil USER não encontrado",
                 exception.getMessage()
         );
 

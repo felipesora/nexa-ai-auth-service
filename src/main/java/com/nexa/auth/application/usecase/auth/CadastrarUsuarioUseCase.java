@@ -6,6 +6,7 @@ import com.nexa.auth.application.exception.BadRequestException;
 import com.nexa.auth.application.exception.EntityNotFoundException;
 import com.nexa.auth.application.mapper.UsuarioControllerMapper;
 import com.nexa.auth.domain.entity.perfil.Perfil;
+import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.domain.repository.PerfilRepository;
 import com.nexa.auth.domain.repository.UsuarioRepository;
@@ -36,10 +37,8 @@ public class CadastrarUsuarioUseCase {
             throw new BadRequestException("Este email já está cadastrado");
         }
 
-        Perfil perfil = perfilRepository.findById(request.idPerfil())
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                String.format("Perfil com id %s não encontrado", request.idPerfil())));
+        Perfil perfil = perfilRepository.findByNome(TipoPerfil.USER)
+                .orElseThrow(() -> new EntityNotFoundException("Perfil USER não encontrado"));
 
         Usuario usuario = mapper.toDomain(request);
         usuario.setPerfil(perfil);

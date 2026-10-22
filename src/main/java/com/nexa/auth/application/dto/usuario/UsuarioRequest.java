@@ -18,10 +18,6 @@ public record UsuarioRequest(
 
         @NotBlank(message = "A senha é obrigatória")
         @Size(min = 6, max = 150, message = "A senha deve ter entre 6 e 100 caracteres")
-        String senha,
-
-        @NotNull(message = "Id do perfil é obrigatório")
-        @JsonProperty("id_perfil")
-        Long idPerfil
+        String senha
 ) {
 }
