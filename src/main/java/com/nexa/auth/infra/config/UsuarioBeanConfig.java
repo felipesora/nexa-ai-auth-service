@@ -36,8 +36,8 @@ public class UsuarioBeanConfig {
     }
 
     @Bean
-    AtualizarUsuarioUseCase atualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, PasswordEncoder passwordEncoder) {
-        return new AtualizarUsuarioUseCase(usuarioRepository, perfilRepository, passwordEncoder);
+    AtualizarUsuarioUseCase atualizarUsuarioUseCase(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        return new AtualizarUsuarioUseCase(usuarioRepository, passwordEncoder);
     }
 
     @Bean

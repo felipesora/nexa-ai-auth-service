@@ -68,8 +68,7 @@ class AuthenticationControllerTest {
         request = new UsuarioRequest(
                 "Felipe",
                 "felipe@email.com",
-                "felipe10",
-                1L
+                "felipe10"
         );
 
         Perfil perfil = new PerfilBuilder()

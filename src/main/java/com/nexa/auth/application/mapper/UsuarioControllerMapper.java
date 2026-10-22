@@ -1,6 +1,5 @@
 package com.nexa.auth.application.mapper;
 
-import com.nexa.auth.domain.entity.perfil.Perfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.application.dto.usuario.UsuarioRequest;
 import com.nexa.auth.application.dto.perfil.PerfilResponse;
@@ -11,8 +10,6 @@ import java.time.LocalDateTime;
 public class UsuarioControllerMapper {
 
     public Usuario toDomain(UsuarioRequest request) {
-        Perfil perfil = new Perfil(request.idPerfil());
-
         return new Usuario(
                 null,
                 request.nome(),
@@ -20,7 +17,7 @@ public class UsuarioControllerMapper {
                 request.senha(),
                 LocalDateTime.now(),
                 true,
-                perfil
+                null
         );
     }
 
