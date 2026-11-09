@@ -74,7 +74,7 @@ class CadastrarUsuarioUseCaseTest {
         when(perfilRepository.findByNome(TipoPerfil.USER))
                 .thenReturn(Optional.of(usuario.getPerfil()));
 
-        when(mapper.toDomain(request))
+        when(mapper.toDomain(request, usuario.getPerfil()))
                 .thenReturn(usuario);
 
         when(passwordEncoder.encode(usuario.getSenha()))
@@ -130,7 +130,7 @@ class CadastrarUsuarioUseCaseTest {
         when(perfilRepository.findByNome(TipoPerfil.USER))
                 .thenReturn(Optional.of(perfilBanco));
 
-        when(mapper.toDomain(request))
+        when(mapper.toDomain(request, perfilBanco))
                 .thenReturn(usuario);
 
         when(passwordEncoder.encode(anyString()))
@@ -144,7 +144,7 @@ class CadastrarUsuarioUseCaseTest {
 
         useCase.execute(request);
 
-        assertSame(perfilBanco, usuario.getPerfil());
+        verify(mapper).toDomain(request, perfilBanco);
     }
 
     @Test
@@ -169,7 +169,7 @@ class CadastrarUsuarioUseCaseTest {
         assertEquals("Este email já está cadastrado", exception.getMessage());
 
         verify(usuarioRepository, never()).save(any());
-        verify(mapper, never()).toDomain(any());
+        verify(mapper, never()).toDomain(any(), any());
     }
 
     @Test
@@ -200,6 +200,6 @@ class CadastrarUsuarioUseCaseTest {
         );
 
         verify(usuarioRepository, never()).save(any());
-        verify(mapper, never()).toDomain(any());
+        verify(mapper, never()).toDomain(any(), any());
     }
 }

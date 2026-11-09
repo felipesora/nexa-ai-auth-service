@@ -40,8 +40,7 @@ public class CadastrarUsuarioUseCase {
         Perfil perfil = perfilRepository.findByNome(TipoPerfil.USER)
                 .orElseThrow(() -> new EntityNotFoundException("Perfil USER não encontrado"));
 
-        Usuario usuario = mapper.toDomain(request);
-        usuario.setPerfil(perfil);
+        Usuario usuario = mapper.toDomain(request, perfil);
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuarioRepository.save(usuario);
 
