@@ -4,7 +4,8 @@ import com.nexa.auth.application.usecase.usuario.*;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.presentation.exception.ErrorResponse;
 import com.nexa.auth.application.mapper.UsuarioControllerMapper;
-import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.usuario.AlterarSenhaRequest;
+import com.nexa.auth.application.dto.usuario.UsuarioUpdateRequest;
 import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,19 +34,22 @@ public class UsuarioController {
     private final AtualizarUsuarioUseCase atualizarUsuarioUseCase;
     private final DesativarUsuarioUseCase desativarUsuario;
     private final AtivarUsuarioUseCase ativarUsuarioUseCase;
+    private final AlterarSenhaUsuarioUseCase alterarSenhaUsuarioUseCase;
 
     public UsuarioController(ListarTodosUsuariosUseCase listarTodosUsuariosUseCase,
                              ListarUsuariosPorPerfilUseCase listarUsuariosPorPerfilUseCase,
                              BuscarUsuarioPorIdUseCase buscarUsuarioPorIdUseCase,
                              AtualizarUsuarioUseCase atualizarUsuarioUseCase,
                              DesativarUsuarioUseCase desativarUsuario,
-                             AtivarUsuarioUseCase ativarUsuarioUseCase) {
+                             AtivarUsuarioUseCase ativarUsuarioUseCase,
+                             AlterarSenhaUsuarioUseCase alterarSenhaUsuarioUseCase) {
         this.listarTodosUsuariosUseCase = listarTodosUsuariosUseCase;
         this.listarUsuariosPorPerfilUseCase = listarUsuariosPorPerfilUseCase;
         this.buscarUsuarioPorIdUseCase = buscarUsuarioPorIdUseCase;
         this.atualizarUsuarioUseCase = atualizarUsuarioUseCase;
         this.desativarUsuario = desativarUsuario;
         this.ativarUsuarioUseCase = ativarUsuarioUseCase;
+        this.alterarSenhaUsuarioUseCase = alterarSenhaUsuarioUseCase;
     }
 
     @Operation(
@@ -117,7 +121,8 @@ public class UsuarioController {
     @Operation(
             summary = "Atualizar usuário",
             description = """
-            Atualiza os dados de um usuário.
+            Atualiza o nome e o e-mail de um usuário.
+            A senha é alterada pelo endpoint PATCH /v1/usuarios/{id}/senha.
 
             O usuário pode atualizar apenas os próprios dados,
             exceto administradores.
@@ -132,8 +137,31 @@ public class UsuarioController {
     })
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarUsuario(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
+    public ResponseEntity<Void> atualizarUsuario(@PathVariable Long id, @RequestBody @Valid UsuarioUpdateRequest request) {
         atualizarUsuarioUseCase.execute(id, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Alterar senha do usuário",
+            description = """
+            Altera a senha de um usuário após conferir a senha atual.
+
+            O usuário pode alterar apenas a própria senha,
+            exceto administradores.
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Senha atual incorreta ou dados inválidos", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Sem permissão", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
+    @PatchMapping("/{id}/senha")
+    public ResponseEntity<Void> alterarSenha(@PathVariable Long id, @RequestBody @Valid AlterarSenhaRequest request) {
+        alterarSenhaUsuarioUseCase.execute(id, request);
         return ResponseEntity.noContent().build();
     }
 

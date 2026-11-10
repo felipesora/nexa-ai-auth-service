@@ -12,7 +12,9 @@ import com.nexa.auth.domain.entity.perfil.TipoPerfil;
 import com.nexa.auth.domain.entity.usuario.Usuario;
 import com.nexa.auth.infra.security.JwtAuthenticationFilter;
 import com.nexa.auth.infra.security.TokenProvider;
+import com.nexa.auth.application.dto.usuario.AlterarSenhaRequest;
 import com.nexa.auth.application.dto.usuario.UsuarioRequest;
+import com.nexa.auth.application.dto.usuario.UsuarioUpdateRequest;
 import com.nexa.auth.application.dto.perfil.PerfilResponse;
 import com.nexa.auth.application.dto.usuario.UsuarioResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +72,9 @@ class UsuarioControllerTest {
     private AtivarUsuarioUseCase ativarUsuarioUseCase;
 
     @MockitoBean
+    private AlterarSenhaUsuarioUseCase alterarSenhaUsuarioUseCase;
+
+    @MockitoBean
     private TokenProvider tokenProvider;
 
     @MockitoBean
@@ -79,6 +84,8 @@ class UsuarioControllerTest {
     private ObjectMapper objectMapper;
 
     private UsuarioRequest request;
+    private UsuarioUpdateRequest updateRequest;
+    private AlterarSenhaRequest alterarSenhaRequest;
     private Usuario usuario;
     private UsuarioResponse response;
 
@@ -89,6 +96,16 @@ class UsuarioControllerTest {
                 "Felipe",
                 "felipe@email.com",
                 "felipe10"
+        );
+
+        updateRequest = new UsuarioUpdateRequest(
+                "Felipe",
+                "felipe@email.com"
+        );
+
+        alterarSenhaRequest = new AlterarSenhaRequest(
+                "felipe10",
+                "novaSenha123"
         );
 
         Perfil perfil = new PerfilBuilder()
@@ -216,7 +233,7 @@ class UsuarioControllerTest {
     void deveAtualizarUsuario() throws Exception {
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNoContent());
     }
 
@@ -229,7 +246,7 @@ class UsuarioControllerTest {
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message")
@@ -245,7 +262,7 @@ class UsuarioControllerTest {
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message")
@@ -262,7 +279,7 @@ class UsuarioControllerTest {
 
         mockMvc.perform(put(BASE_URL + "/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message")
@@ -319,5 +336,40 @@ class UsuarioControllerTest {
                         .value(String.format(
                                 "Usuário com id %s não encontrado",
                                 usuario.getId())));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deveAlterarSenha() throws Exception {
+        mockMvc.perform(patch(BASE_URL + "/{id}/senha", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(alterarSenhaRequest)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deveRetornarErro400CasoSenhaAtualIncorreta() throws Exception {
+        doThrow(new BadRequestException("Senha atual incorreta"))
+                .when(alterarSenhaUsuarioUseCase)
+                .execute(any(), any());
+
+        mockMvc.perform(patch(BASE_URL + "/{id}/senha", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(alterarSenhaRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Senha atual incorreta"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deveRetornarErro400CasoNovaSenhaInvalida() throws Exception {
+        AlterarSenhaRequest requestInvalido = new AlterarSenhaRequest("felipe10", "123");
+
+        mockMvc.perform(patch(BASE_URL + "/{id}/senha", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestInvalido)))
+                .andExpect(status().isBadRequest());
     }
 }
