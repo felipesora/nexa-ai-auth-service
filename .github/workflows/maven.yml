@@ -54,3 +54,44 @@ jobs:
 
       - name: Build e testes com Maven
         run: mvn -B clean verify
+  
+  docker:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/nexa-ai-auth-service
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calcular versão
+        id: version
+        run: |
+          echo "number=1.$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ steps.version.outputs.number }}
+            ${{ env.IMAGE }}:${{ steps.version.outputs.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
